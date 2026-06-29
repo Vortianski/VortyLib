@@ -3,7 +3,6 @@
   "fragment": "vortylib:entity_end_portal",
   "samplers": [
     { "name": "Sampler0" },
-    { "name": "Sampler1" },
     { "name": "Sampler2" },
     { "name": "Sampler3" }
   ],

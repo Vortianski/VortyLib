@@ -28,6 +28,7 @@ public class VortyLibShaders {
     public static CompatibleShaderInstance ENTITY_STATIC_NOISE;
     public static CompatibleShaderInstance ENTITY_POLYCHROMATIC;
     public static CompatibleShaderInstance ENTITY_NEBULA;
+    public static CompatibleShaderInstance ENTITY_STARFALL;
 
     public static Uniform endPortalTime;
     public static Uniform endPortalLayers;
@@ -35,6 +36,10 @@ public class VortyLibShaders {
     public static Uniform staticLayers;
     public static Uniform nebulaTime;
     public static Uniform crystalTime;
+    public static Uniform starfallTime;
+    public static Uniform starfallSpeed;
+    public static Uniform starfallRotation;
+    public static Uniform starfallRotationSpeed;
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void register(RegisterShadersEvent event) {
@@ -128,6 +133,25 @@ public class VortyLibShaders {
                 }
 
                 ENTITY_NEBULA.apply();
+            });
+
+            ENTITY_STARFALL = new CompatibleShaderInstance(
+                    event.getResourceProvider(),
+                    ResourceLocation.fromNamespaceAndPath("vortylib", "entity_translucent_parallax"),
+                    DefaultVertexFormat.NEW_ENTITY
+            );
+            event.registerShader(ENTITY_STARFALL, shaderInstance -> {
+                starfallTime = shaderInstance.getUniform("GameTime");
+                starfallSpeed = shaderInstance.getUniform("ParallaxSpeed");
+                starfallRotation = shaderInstance.getUniform("ParallaxRotation");
+                starfallRotationSpeed = shaderInstance.getUniform("ParallaxRotationSpeed");
+
+                starfallTime.set((float) renderTime + renderFrame);
+                starfallSpeed.set(10f, 15f);
+                starfallRotation.set(45f);
+                starfallRotationSpeed.set(0f);
+
+                ENTITY_STARFALL.apply();
             });
         } catch (IOException e) {
             throw new RuntimeException(e);

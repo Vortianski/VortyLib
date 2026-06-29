@@ -13,6 +13,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.NeoForgeRenderTypes;
 import net.neoforged.neoforge.client.event.RegisterRenderBuffersEvent;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
@@ -46,6 +47,14 @@ public class VortyLibRenderTypes {
     private static final Function<ResourceLocation, RenderType> ENTITY_STATIC_NOISE = Util.memoize(VortyLibRenderTypes::createEntityStaticNoise);
     private static final Function<ResourceLocation, RenderType> ENTITY_POLYCHROMATIC = Util.memoize(VortyLibRenderTypes::createEntityPolychromatic);
     private static final Function<ResourceLocation, RenderType> ENTITY_NEBULA = Util.memoize(VortyLibRenderTypes::createEntityNebula);
+    private static final Function<List<ResourceLocation>, RenderType> ENTITY_STARFALL = Util.memoize(
+            data -> {
+                ResourceLocation textureOne = data.get(0);
+                ResourceLocation textureTwo = data.get(1);
+
+                return createEntityStarfall(textureOne, textureTwo);
+            }
+    );
 
     private static RenderType createTextNoCull(ResourceLocation resourceLocation) {
         RenderType.CompositeState compositeState = RenderType.CompositeState.builder()
@@ -253,6 +262,34 @@ public class VortyLibRenderTypes {
         );
     }
 
+    private static RenderType createEntityStarfall(ResourceLocation textureOne, ResourceLocation textureTwo) {
+        RenderType.CompositeState compositeState = RenderType.CompositeState.builder()
+                .setShaderState(new RenderStateShard.ShaderStateShard(() -> VortyLibShaders.ENTITY_STARFALL))
+                .setTextureState(
+                        RenderStateShard.MultiTextureStateShard.builder()
+                                .add(textureOne,false,false)
+                                .add(ResourceLocation.fromNamespaceAndPath("minecraft", "textures/block/debug.png"), false, false)
+                                .add(ResourceLocation.fromNamespaceAndPath("minecraft", "textures/block/debug.png"), false, false)
+                                .add(textureTwo,false,false)
+                                .build()
+                )
+                .setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
+                .setCullState(RenderStateShard.NO_CULL)
+                .setLightmapState(RenderStateShard.LIGHTMAP)
+                .setOverlayState(RenderStateShard.OVERLAY)
+                .createCompositeState(true);
+
+        return RenderType.create(
+                "entity_starfall",
+                DefaultVertexFormat.NEW_ENTITY,
+                VertexFormat.Mode.QUADS,
+                1536,
+                true,
+                true,
+                compositeState
+        );
+    }
+
     public static RenderType getTextNoCull(ResourceLocation resourceLocation) {
         return TEXT_NO_CULL.apply(resourceLocation);
     }
@@ -289,6 +326,15 @@ public class VortyLibRenderTypes {
         return ENTITY_NEBULA.apply(resourceLocation);
     }
 
+    public static RenderType getEntityStarfall(ResourceLocation textureOne, ResourceLocation textureTwo) {
+        List<ResourceLocation> data = new ArrayList<>();
+
+        data.add(textureOne);
+        data.add(textureTwo);
+
+        return ENTITY_STARFALL.apply(data);
+    }
+
     @SubscribeEvent
     public static void register(RegisterRenderBuffersEvent event) {
         event.registerRenderBuffer(getTextNoCull(DEBUG_TEXTURE));
@@ -300,6 +346,7 @@ public class VortyLibRenderTypes {
         event.registerRenderBuffer(getEntityStaticNoise(DEBUG_TEXTURE));
         event.registerRenderBuffer(getEntityPolychromatic(DEBUG_TEXTURE));
         event.registerRenderBuffer(getEntityNebula(DEBUG_TEXTURE));
+        event.registerRenderBuffer(getEntityStarfall(DEBUG_TEXTURE, DEBUG_TEXTURE));
     }
 
     private static class CustomizableTextureState extends RenderStateShard.TextureStateShard {
