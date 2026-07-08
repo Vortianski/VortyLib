@@ -7,7 +7,8 @@
   ],
   "client": [
     "client.FontMixin",
-    "client.RenderTypeMixin"
+    "client.RenderTypeMixin",
+    "client.BlockModelDefinitionDeserializerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

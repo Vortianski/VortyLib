@@ -12,6 +12,5 @@ public class VortyLib {
     public static final Logger LOGGER = LogUtils.getLogger();
 
     public VortyLib(IEventBus modEventBus, ModContainer modContainer) {
-
     }
 }
