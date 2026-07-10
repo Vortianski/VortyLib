@@ -24,7 +24,7 @@ public class ExpandableCreativeTab extends CreativeModeTab {
 
     @Override
     public @NotNull Collection<ItemStack> getDisplayItems() {
-        Collection<ItemStack> items = new ArrayList<>(super.getDisplayItems());
+        Collection<ItemStack> items = new ArrayList<>();
 
         for (ExpandableGroup group : groups.values()) {
             items.add(group.icon);
@@ -33,6 +33,8 @@ public class ExpandableCreativeTab extends CreativeModeTab {
                 items.addAll(group.items);
             }
         }
+
+        items.addAll(super.getDisplayItems());
 
         return items;
     }

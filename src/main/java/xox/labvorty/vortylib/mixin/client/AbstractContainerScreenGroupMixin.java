@@ -12,10 +12,12 @@ import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xox.labvorty.vortylib.data.creative_tab.ExpandableCreativeTab;
+import xox.labvorty.vortylib.data.creative_tab.ExpandableGroup;
 import xox.labvorty.vortylib.data.creative_tab.ExpansionHelpers;
 
 @Mixin(AbstractContainerScreen.class)
@@ -46,7 +48,7 @@ public abstract class AbstractContainerScreenGroupMixin {
 
         poseStack.pushPose();
 
-        poseStack.translate(slot.x + 10, slot.y + 1, 320);
+        poseStack.translate(slot.x + 10, slot.y + 9, 320);
 
         guiGraphics.drawString(
                 Minecraft.getInstance().font,
@@ -82,5 +84,35 @@ public abstract class AbstractContainerScreenGroupMixin {
             guiGraphics.renderTooltip(Minecraft.getInstance().font, Component.translatable("vortylib.tab." + groupId), x, y);
             ci.cancel();
         }
+    }
+
+    @Inject(method = "renderSlot", at = @At("HEAD"))
+    private void vortylib$drawInlinedBackground(GuiGraphics guiGraphics, Slot slot, CallbackInfo ci) {
+        CreativeModeTab tab = CreativeModeInventoryScreenAccessor.vortylib$getSelectedTab();
+        if (!(tab instanceof ExpandableCreativeTab expandableCreativeTab)) {
+            return;
+        }
+
+        ItemStack itemStack = slot.getItem();
+        if (itemStack.isEmpty() || !vortylib$isInlinedItem(expandableCreativeTab, itemStack)) {
+            return;
+        }
+
+        guiGraphics.fill(slot.x, slot.y, slot.x + 16, slot.y + 16, 0x33000000);
+    }
+
+    @Unique
+    private static boolean vortylib$isInlinedItem(ExpandableCreativeTab tab, ItemStack stack) {
+        for (ExpandableGroup group : tab.groups.values()) {
+            if (!ExpansionHelpers.isExpanded(group.icon)) {
+                continue;
+            }
+            for (ItemStack member : group.items) {
+                if (ItemStack.isSameItemSameComponents(member, stack)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
