@@ -8,7 +8,10 @@
   "client": [
     "client.FontMixin",
     "client.RenderTypeMixin",
-    "client.BlockModelDefinitionDeserializerMixin"
+    "client.BlockModelDefinitionDeserializerMixin",
+    "client.AbstractContainerScreenGroupMixin",
+    "client.CreativeScreenGroupMixin",
+    "client.CreativeModeInventoryScreenAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

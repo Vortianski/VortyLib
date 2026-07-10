@@ -1,10 +1,8 @@
 package xox.labvorty.vortylib.data.model;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.*;
 import com.mojang.math.Transformation;
 import net.minecraft.client.renderer.block.model.Variant;
-import net.minecraft.client.resources.model.BlockModelRotation;
 import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
@@ -12,7 +10,6 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Quaternionf;
-import org.joml.Vector3f;
 
 import java.lang.reflect.Type;
 
