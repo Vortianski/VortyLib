@@ -9,8 +9,8 @@
     "client.FontMixin",
     "client.RenderTypeMixin",
     "client.BlockModelDefinitionDeserializerMixin",
-    "client.AbstractContainerScreenGroupMixin",
-    "client.CreativeScreenGroupMixin",
+    "client.AbstractContainerScreenMixin",
+    "client.CreativeModeInventoryScreenMixin",
     "client.CreativeModeInventoryScreenAccessor"
   ],
   "injectors": {

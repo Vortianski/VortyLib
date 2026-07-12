@@ -11,4 +11,7 @@ public interface CreativeModeInventoryScreenAccessor {
     static CreativeModeTab vortylib$getSelectedTab() {
         throw new AssertionError("mixin not applied");
     }
+
+    @Accessor("scrollOffs")
+    float vortylib$getScrollOffs();
 }
