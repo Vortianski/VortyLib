@@ -1,6 +1,18 @@
-## Directions
-- May need to run "./gradlew IntellijRuns" in the terminal
-- May need to reload gradle projects by pressing refresh button in Gradle of right side bar of IntelliJ Idea IDE
-### Use ParchmentMC for the following (https://parchmentmc.org/docs/getting-started):
-- May need to add an id in plugins in build.gradle, change mapping values and mod values(YOU MUST CHANGE MOD VALUES SO IT DOES NOT INCLUDE MY NAME "SURYA GEDIPUDI")
-- May need to add maven in settings.gradle
+# VortyLib
+Simple Minecraft library mod that contains shared features used for mods developed by me (aka Vortianski).
+
+## Supported features
+- Custom RenderTypes with core shaders
+- Iris Shaders support for custom render types
+- Custom Font class for rendering text without culling
+- Special blockstate definition that allows you to use Z axis for rotating models
+- Custom CreativeModeTab with item groups
+
+## Planned features
+- Extended Iris Shaders support (currently custom core shaders cannot cast a shadow)
+- Extended GuiGraphics with more useful features
+
+## Contact
+Telegram: [@vortianskii](https://t.me/vortianskii)
+
+Discord: @vortyyy
