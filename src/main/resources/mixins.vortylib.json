@@ -1,0 +1,18 @@
+{
+  "required": true,
+  "minVersion": "0.8.5",
+  "compatibilityLevel": "JAVA_17",
+  "package": "xox.labvorty.vortylib.mixins",
+  "refmap": "vortylib.refmap.json",
+  "mixins": [
+  ],
+  "client": [
+    "client.BlockModelDefinitionDeserializerMixin",
+    "client.AbstractContainerScreenMixin",
+    "client.CreativeModeInventoryScreenAccessor",
+    "client.CreativeModeInventoryScreenMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
