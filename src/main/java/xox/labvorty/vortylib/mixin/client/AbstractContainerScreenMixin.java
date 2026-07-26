@@ -11,7 +11,9 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import org.apache.commons.lang3.tuple.MutablePair;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -22,12 +24,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xox.labvorty.vortylib.data.creative_tab.ExpandableCreativeTab;
 import xox.labvorty.vortylib.data.creative_tab.ExpandableGroup;
 import xox.labvorty.vortylib.data.creative_tab.ExpansionHelpers;
+import xox.labvorty.vortylib.items.defined.AdvancedItemOptions;
+import xox.labvorty.vortylib.mixin_helpers.AbstractContainerScreenAccessor;
+import xox.labvorty.vortylib.utilities.VortyLibUtilities;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Mixin(AbstractContainerScreen.class)
-public abstract class AbstractContainerScreenMixin {
+public abstract class AbstractContainerScreenMixin implements AbstractContainerScreenAccessor {
     @Unique
     private static final ResourceLocation VORTYLIB$GROUP_BORDERS = ResourceLocation.fromNamespaceAndPath("vortylib", "textures/gui/creative_group_borders.png");
     @Unique
@@ -36,13 +40,124 @@ public abstract class AbstractContainerScreenMixin {
     private static final int VORTYLIB$ATLAS_WIDTH = 18;
     @Unique
     private static final int VORTYLIB$ATLAS_HEIGHT = 22;
-
     @Shadow
     @Final
     protected AbstractContainerMenu menu;
-
     @Shadow
     protected Slot hoveredSlot;
+    @Shadow
+    protected abstract List<Component> getTooltipFromContainerItem(ItemStack stack);
+    @Unique
+    protected List<MutablePair<Integer, Item>> vortylib$itemHold = new ArrayList<>();
+
+    @Override
+    public Slot vortylib$getHoveredSlot() {
+        return hoveredSlot;
+    }
+
+    @Override
+    public List<Component> vortylib$getTooltipFromContainerItem(ItemStack itemStack) {
+        return this.getTooltipFromContainerItem(itemStack);
+    }
+
+    @Inject(method = "renderTooltip", at = @At("HEAD"), cancellable = true)
+    private void vortylib$advancedTooltipItem(GuiGraphics guiGraphics, int x, int y, CallbackInfo ci) {
+        if (hoveredSlot != null && !hoveredSlot.getItem().isEmpty()) {
+            ItemStack itemStack = hoveredSlot.getItem();
+
+            if (itemStack.getItem() instanceof AdvancedItemOptions advancedItemOptions && advancedItemOptions.useExpander(itemStack)) {
+                Item item = itemStack.getItem();
+
+                MutablePair<Integer, Item> pair = vortylib$itemHold.stream()
+                        .filter(p -> p.getValue().equals(item))
+                        .findFirst()
+                        .orElse(null);
+
+                int ticks = pair != null ? pair.getLeft() : 0;
+
+                List<Component> tooltipList = this.getTooltipFromContainerItem(itemStack);
+                tooltipList.add(tooltipList.indexOf(advancedItemOptions.getKeysTooltip()) + 1, VortyLibUtilities.createHoldBar(ticks, 25));
+
+                guiGraphics.renderTooltip(
+                        Minecraft.getInstance().font,
+                        tooltipList,
+                        itemStack.getTooltipImage(),
+                        itemStack,
+                        x,
+                        y
+                );
+                ci.cancel();
+            }
+        }
+    }
+
+    @Inject(method = "tick", at = @At("HEAD"))
+    private void vortylib$tick(CallbackInfo ci) {
+        if (hoveredSlot == null || hoveredSlot.getItem().isEmpty()) {
+            vortylib$fadeHold();
+            return;
+        }
+
+        ItemStack itemStack = hoveredSlot.getItem();
+
+        if (!(itemStack.getItem() instanceof AdvancedItemOptions advancedItemOptions)) {
+            vortylib$fadeHold();
+            return;
+        }
+
+        if (!advancedItemOptions.useExpander(itemStack)) {
+            vortylib$fadeHold();
+            return;
+        }
+
+        Item item = itemStack.getItem();
+
+        MutablePair<Integer, Item> pair = vortylib$itemHold.stream()
+                .filter(p -> p.getValue().equals(item))
+                .findFirst()
+                .orElse(null);
+
+        if (VortyLibUtilities.isKeyOfKeysDown(advancedItemOptions.getKeysToHold())) {
+            if (pair != null) {
+                pair.setLeft(Math.min(Math.clamp(pair.getLeft() + 1, 0, 26), 100));
+
+                if (pair.getLeft() >= 25) {
+                    advancedItemOptions.trigger(((AbstractContainerScreen<?>)(Object)this));
+                }
+            } else {
+                vortylib$itemHold.add(new MutablePair<>(1, item));
+            }
+        } else {
+            if (pair != null) {
+                int ticks = pair.getLeft();
+
+                if (ticks > 0) {
+                    pair.setLeft(ticks - 1);
+                }
+
+                if (pair.getLeft() <= 0) {
+                    vortylib$itemHold.remove(pair);
+                }
+            }
+        }
+    }
+
+    @Unique
+    private void vortylib$fadeHold() {
+        Iterator<MutablePair<Integer, Item>> iterator = vortylib$itemHold.iterator();
+
+        while (iterator.hasNext()) {
+            MutablePair<Integer, Item> pair = iterator.next();
+
+            int ticks = pair.getLeft();
+
+            if (ticks <= 0) {
+                iterator.remove();
+            } else {
+                pair.setLeft(ticks - 1);
+            }
+        }
+    }
 
     @Inject(method = "renderSlot", at = @At("TAIL"))
     private void vortylib$drawGroupMarker(GuiGraphics guiGraphics, Slot slot, CallbackInfo ci) {
@@ -81,11 +196,7 @@ public abstract class AbstractContainerScreenMixin {
         poseStack.popPose();
     }
 
-    @Inject(
-            method = "renderTooltip",
-            at = @At("HEAD"),
-            cancellable = true
-    )
+    @Inject(method = "renderTooltip", at = @At("HEAD"), cancellable = true)
     private void vortylib$replaceTooltip(GuiGraphics guiGraphics, int x, int y, CallbackInfo ci) {
         CreativeModeTab tab = CreativeModeInventoryScreenAccessor.vortylib$getSelectedTab();
         if (!(tab instanceof ExpandableCreativeTab expandableCreativeTab)) {
@@ -132,10 +243,7 @@ public abstract class AbstractContainerScreenMixin {
         guiGraphics.fill(slot.x, slot.y, slot.x + 16, slot.y + 16, 0x33000000);
     }
 
-    @Inject(
-            method = "render",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;renderLabels(Lnet/minecraft/client/gui/GuiGraphics;II)V")
-    )
+    @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;renderLabels(Lnet/minecraft/client/gui/GuiGraphics;II)V"))
     private void vortylib$drawAllGroupBorders(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
         if (!((Object) this instanceof CreativeModeInventoryScreenAccessor)) {
             return;
@@ -153,7 +261,7 @@ public abstract class AbstractContainerScreenMixin {
 
         guiGraphics.flush();
         guiGraphics.pose().pushPose();
-        guiGraphics.pose().translate(0.0F, 0.0F, 400.0F);
+        guiGraphics.pose().translate(0.0F, 0.0F, 100.0F);
 
         for (int i = 0; i < visibleSlots; i++) {
             Slot slot = this.menu.slots.get(i);
@@ -179,30 +287,16 @@ public abstract class AbstractContainerScreenMixin {
 
     @Unique
     private String vortylib$getExpandedGroupId(ExpandableCreativeTab tab, ItemStack stack) {
-        String iconGroupId = ExpansionHelpers.getGroupID(stack);
+        String groupId = ExpansionHelpers.getItemGroupID(stack);
 
-        if (iconGroupId != null) {
-            ExpandableGroup iconGroup = tab.groups.get(iconGroupId);
-
-            if (iconGroup != null) {
-                return ExpansionHelpers.isExpanded(iconGroup.icon) ? iconGroupId : null;
-            }
-
+        if (groupId == null) {
             return null;
         }
 
-        for (Map.Entry<String, ExpandableGroup> entry : tab.groups.entrySet()) {
-            ExpandableGroup group = entry.getValue();
+        ExpandableGroup group = tab.groups.get(groupId);
 
-            if (!ExpansionHelpers.isExpanded(group.icon)) {
-                continue;
-            }
-
-            for (ItemStack member : group.items) {
-                if (ItemStack.isSameItemSameComponents(member, stack)) {
-                    return entry.getKey();
-                }
-            }
+        if (group != null && ExpansionHelpers.isExpanded(group.icon)) {
+            return groupId;
         }
 
         return null;

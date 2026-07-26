@@ -11,8 +11,11 @@
     "client.BlockModelDefinitionDeserializerMixin",
     "client.AbstractContainerScreenMixin",
     "client.CreativeModeInventoryScreenMixin",
-    "client.CreativeModeInventoryScreenAccessor"
+    "client.CreativeModeInventoryScreenAccessor",
+    "compat.curios.CuriosScreenMixin",
+    "client.GuiGraphicsMixin"
   ],
+  "plugin": "xox.labvorty.vortylib.mixin.compat.VortyLibMixinPlugin",
   "injectors": {
     "defaultRequire": 1
   },

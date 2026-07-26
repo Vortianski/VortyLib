@@ -1,0 +1,5 @@
+{
+  "vortylib.chaoslib_warning": "VortyLib потребує встановлення ChaosApi, якщо запущено Iris Shaders, щоб виправити деякі несумісності.",
+  "vortylib.chaoslib_warning.hint": "[Натисніть, щоб вимкнути це попередження]",
+  "vortylib.chaoslib_warning.disabled": "Попередження про ChaosApi вимкнено."
+}

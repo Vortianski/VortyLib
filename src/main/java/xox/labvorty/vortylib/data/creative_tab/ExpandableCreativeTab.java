@@ -27,10 +27,10 @@ public class ExpandableCreativeTab extends CreativeModeTab {
         Collection<ItemStack> items = new ArrayList<>();
 
         for (ExpandableGroup group : groups.values()) {
-            items.add(group.icon);
+            items.add(group.icon.copy());
 
             if (ExpansionHelpers.isExpanded(group.icon)) {
-                items.addAll(group.items);
+                items.addAll(group.items.stream().map(ItemStack::copy).toList());
             }
         }
 
@@ -55,7 +55,18 @@ public class ExpandableCreativeTab extends CreativeModeTab {
         public Builder addGroup(String id, ItemStack icon, List<ItemStack> items) {
             ItemStack taggedIcon = icon.copy();
             taggedIcon.set(VortyLibDataComponents.GROUP_COMPONENT, id);
-            groups.put(id, new ExpandableGroup(taggedIcon, items));
+            taggedIcon.set(VortyLibDataComponents.GROUP_ITEM_COMPONENT, id);
+
+            List<ItemStack> taggedItems = items.stream()
+                    .map(ItemStack::copy)
+                    .peek(stack -> stack.set(
+                            VortyLibDataComponents.GROUP_ITEM_COMPONENT,
+                            id
+                    ))
+                    .toList();
+
+            groups.put(id, new ExpandableGroup(taggedIcon, taggedItems));
+
             return this;
         }
 

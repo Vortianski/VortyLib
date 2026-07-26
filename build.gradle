@@ -20,6 +20,15 @@ sourceSets.main.resources {
 }
 
 repositories {
+    maven {
+        name = "Curios maven"
+        url = "https://maven.theillusivec4.top/"
+    }
+
+    maven {
+        name = "CurseMaven"
+        url = "https://cursemaven.com"
+    }
 }
 
 base {
@@ -79,7 +88,17 @@ configurations {
 }
 
 dependencies {
+    //CuriosAPI
+    compileOnlyApi("top.theillusivec4.curios:curios-neoforge:${property("curios_version")}")
+    runtimeOnly("top.theillusivec4.curios:curios-neoforge:${property("curios_version")}")
 
+    //Iris Shaders
+    runtimeOnly("curse.maven:sodium-394468:6382651")
+    implementation("curse.maven:irisshaders-455508:6661598")
+
+    //ChaosLib
+    implementation("dev.elifian.chaoslib:common:1.1.0")
+    runtimeOnly("dev.elifian.chaoslib:neoforge:1.1.0")
 }
 
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {

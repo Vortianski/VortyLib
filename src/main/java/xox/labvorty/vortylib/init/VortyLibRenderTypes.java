@@ -12,6 +12,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.NeoForgeRenderTypes;
 import net.neoforged.neoforge.client.event.RegisterRenderBuffersEvent;
+import xox.labvorty.vortylib.compat.iris.IrisRenderCompat;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,6 +47,7 @@ public class VortyLibRenderTypes {
     private static final Function<ResourceLocation, RenderType> ENTITY_CRYSTAL = Util.memoize(VortyLibRenderTypes::createEntityCrystal);
     private static final Function<ResourceLocation, RenderType> ENTITY_STATIC_NOISE = Util.memoize(VortyLibRenderTypes::createEntityStaticNoise);
     private static final Function<ResourceLocation, RenderType> ENTITY_POLYCHROMATIC = Util.memoize(VortyLibRenderTypes::createEntityPolychromatic);
+    private static final Function<ResourceLocation, RenderType> ENTITY_POLYCHROMATIC_CULL = Util.memoize(VortyLibRenderTypes::createEntityPolychromaticCull);
     private static final Function<ResourceLocation, RenderType> ENTITY_NEBULA = Util.memoize(VortyLibRenderTypes::createEntityNebula);
     private static final Function<List<ResourceLocation>, RenderType> ENTITY_STARFALL = Util.memoize(
             data -> {
@@ -240,6 +242,28 @@ public class VortyLibRenderTypes {
         );
     }
 
+    private static RenderType createEntityPolychromaticCull(ResourceLocation resourceLocation) {
+        RenderType.CompositeState compositeState = RenderType.CompositeState.builder()
+                .setShaderState(new RenderStateShard.ShaderStateShard(() -> VortyLibShaders.ENTITY_POLYCHROMATIC))
+                .setTextureState(new RenderStateShard.TextureStateShard(resourceLocation, false, false))
+                .setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
+                .setCullState(RenderStateShard.CULL)
+                .setLightmapState(RenderStateShard.LIGHTMAP)
+                .setOverlayState(RenderStateShard.OVERLAY)
+                .createCompositeState(true);
+
+
+        return RenderType.create(
+                "entity_polychromatic_cull",
+                DefaultVertexFormat.NEW_ENTITY,
+                VertexFormat.Mode.QUADS,
+                1536,
+                true,
+                true,
+                compositeState
+        );
+    }
+
     private static RenderType createEntityNebula(ResourceLocation resourceLocation) {
         RenderType.CompositeState compositeState = RenderType.CompositeState.builder()
                 .setShaderState(new RenderStateShard.ShaderStateShard(() -> VortyLibShaders.ENTITY_NEBULA))
@@ -291,39 +315,43 @@ public class VortyLibRenderTypes {
     }
 
     public static RenderType getTextNoCull(ResourceLocation resourceLocation) {
-        return TEXT_NO_CULL.apply(resourceLocation);
+        return wrapThis(TEXT_NO_CULL.apply(resourceLocation), resourceLocation);
     }
 
     public static RenderType getEntityEndPortal(ResourceLocation textureOne, ResourceLocation textureTwo, ResourceLocation textureThree) {
-        return ENTITY_END_PORTAL.apply(List.of(textureOne, textureTwo, textureThree));
+        return wrapThis(ENTITY_END_PORTAL.apply(List.of(textureOne, textureTwo, textureThree)), textureTwo);
     }
 
     public static RenderType getEntityTranslucentMask(ResourceLocation textureOne, ResourceLocation textureTwo) {
-        return ENTITY_TRANSLUCENT_MASK.apply(List.of(textureOne, textureTwo));
+        return wrapThis(ENTITY_TRANSLUCENT_MASK.apply(List.of(textureOne, textureTwo)), textureOne);
     }
 
     public static RenderType getEntityNegative(ResourceLocation resourceLocation) {
-        return ENTITY_NEGATIVE.apply(resourceLocation);
+        return wrapThis(ENTITY_NEGATIVE.apply(resourceLocation), resourceLocation);
     }
 
     public static RenderType getEntityTrueNegative(ResourceLocation resourceLocation) {
-        return ENTITY_TRUE_NEGATIVE.apply(resourceLocation);
+        return wrapThis(ENTITY_TRUE_NEGATIVE.apply(resourceLocation), resourceLocation);
     }
 
     public static RenderType getEntityCrystal(ResourceLocation resourceLocation) {
-        return ENTITY_CRYSTAL.apply(resourceLocation);
+        return wrapThis(ENTITY_CRYSTAL.apply(resourceLocation), resourceLocation);
     }
 
     public static RenderType getEntityStaticNoise(ResourceLocation resourceLocation) {
-        return ENTITY_STATIC_NOISE.apply(resourceLocation);
+        return wrapThis(ENTITY_STATIC_NOISE.apply(resourceLocation), resourceLocation);
     }
 
     public static RenderType getEntityPolychromatic(ResourceLocation resourceLocation) {
-        return ENTITY_POLYCHROMATIC.apply(resourceLocation);
+        return wrapThis(ENTITY_POLYCHROMATIC.apply(resourceLocation), resourceLocation);
+    }
+
+    public static RenderType getEntityPolychromaticCull(ResourceLocation resourceLocation) {
+        return wrapThis(ENTITY_POLYCHROMATIC_CULL.apply(resourceLocation), resourceLocation);
     }
 
     public static RenderType getEntityNebula(ResourceLocation resourceLocation) {
-        return ENTITY_NEBULA.apply(resourceLocation);
+        return wrapThis(ENTITY_NEBULA.apply(resourceLocation), resourceLocation);
     }
 
     public static RenderType getEntityStarfall(ResourceLocation textureOne, ResourceLocation textureTwo) {
@@ -333,6 +361,10 @@ public class VortyLibRenderTypes {
         data.add(textureTwo);
 
         return ENTITY_STARFALL.apply(data);
+    }
+
+    public static RenderType wrapThis(RenderType renderType, ResourceLocation resourceLocation) {
+        return IrisRenderCompat.wrapEntityRenderLayer(renderType, RenderType.entityTranslucent(resourceLocation));
     }
 
     @SubscribeEvent
@@ -345,6 +377,7 @@ public class VortyLibRenderTypes {
         event.registerRenderBuffer(getEntityCrystal(DEBUG_TEXTURE));
         event.registerRenderBuffer(getEntityStaticNoise(DEBUG_TEXTURE));
         event.registerRenderBuffer(getEntityPolychromatic(DEBUG_TEXTURE));
+        event.registerRenderBuffer(getEntityPolychromaticCull(DEBUG_TEXTURE));
         event.registerRenderBuffer(getEntityNebula(DEBUG_TEXTURE));
         event.registerRenderBuffer(getEntityStarfall(DEBUG_TEXTURE, DEBUG_TEXTURE));
     }

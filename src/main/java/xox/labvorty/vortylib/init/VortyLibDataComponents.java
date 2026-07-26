@@ -15,4 +15,10 @@ public class VortyLibDataComponents {
                     .persistent(Codec.STRING)
                     .build()
     );
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<String>> GROUP_ITEM_COMPONENT = DATA_COMPONENT_TYPES.register(
+            "group_item_component",
+            () -> DataComponentType.<String>builder()
+                    .persistent(Codec.STRING)
+                    .build()
+    );
 }

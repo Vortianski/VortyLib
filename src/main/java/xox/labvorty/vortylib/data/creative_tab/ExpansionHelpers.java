@@ -22,4 +22,8 @@ public class ExpansionHelpers {
     public static String getGroupID(ItemStack itemStack) {
         return itemStack.get(VortyLibDataComponents.GROUP_COMPONENT);
     }
+
+    public static String getItemGroupID(ItemStack itemStack) {
+        return itemStack.get(VortyLibDataComponents.GROUP_ITEM_COMPONENT);
+    }
 }
