@@ -19,12 +19,8 @@ import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 
-@Mixin(BlockModelDefinition.Deserializer.class)
+@Mixin(value = BlockModelDefinition.Deserializer.class)
 public abstract class BlockModelDefinitionDeserializerMixin {
-    @Shadow
-    @Nullable
-    protected abstract MultiPart getMultiPart(JsonDeserializationContext context, JsonObject json);
-
     @Inject(
             method = "deserialize(Lcom/google/gson/JsonElement;Ljava/lang/reflect/Type;Lcom/google/gson/JsonDeserializationContext;)Lnet/minecraft/client/renderer/block/model/BlockModelDefinition;",
             at = @At("HEAD"),
@@ -32,7 +28,7 @@ public abstract class BlockModelDefinitionDeserializerMixin {
     )
     private void vortylib$deserializeModel(JsonElement jsonElement, Type type, JsonDeserializationContext context, CallbackInfoReturnable<BlockModelDefinition> cir) {
         JsonObject jsonObject = jsonElement.getAsJsonObject();
-        MultiPart multiPart = getMultiPart(context, jsonObject);
+        MultiPart multiPart = ((BlockModelDefinitionDeserializerAccessor)(Object)this).vortylib$getMultiPart(context, jsonObject);
 
         if (jsonObject.has("better_model")) {
             Map<String, MultiVariant> map = new HashMap<>();

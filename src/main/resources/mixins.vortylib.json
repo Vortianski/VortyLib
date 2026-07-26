@@ -7,6 +7,8 @@
   "mixins": [
   ],
   "client": [
+    "client.AbstractContainerScreenAccessor",
+    "client.BlockModelDefinitionDeserializerAccessor",
     "client.BlockModelDefinitionDeserializerMixin",
     "client.AbstractContainerScreenMixin",
     "client.CreativeModeInventoryScreenAccessor",

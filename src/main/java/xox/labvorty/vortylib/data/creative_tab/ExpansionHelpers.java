@@ -19,4 +19,8 @@ public class ExpansionHelpers {
     public static String getGroupID(ItemStack itemStack) {
         return itemStack.getOrCreateTag().getString("vorty_lib_group_id");
     }
+
+    public static String getItemGroupID(ItemStack itemStack) {
+        return itemStack.getOrCreateTag().getString("vorty_lib_group_item_id");
+    }
 }

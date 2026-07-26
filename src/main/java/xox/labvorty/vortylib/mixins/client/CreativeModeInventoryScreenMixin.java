@@ -15,7 +15,7 @@ import xox.labvorty.vortylib.data.creative_tab.ExpansionHelpers;
 
 import java.util.Collection;
 
-@Mixin(CreativeModeInventoryScreen.class)
+@Mixin(value = CreativeModeInventoryScreen.class)
 public abstract class CreativeModeInventoryScreenMixin {
     @Shadow
     private static CreativeModeTab selectedTab;

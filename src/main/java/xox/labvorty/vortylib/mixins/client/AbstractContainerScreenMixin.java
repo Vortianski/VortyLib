@@ -26,7 +26,7 @@ import xox.labvorty.vortylib.data.creative_tab.ExpansionHelpers;
 import java.util.HashMap;
 import java.util.Map;
 
-@Mixin(AbstractContainerScreen.class)
+@Mixin(value = AbstractContainerScreen.class)
 public abstract class AbstractContainerScreenMixin {
     @Unique
     private static final ResourceLocation VORTYLIB$GROUP_BORDERS = ResourceLocation.fromNamespaceAndPath("vortylib", "textures/gui/creative_group_borders.png");
@@ -36,9 +36,6 @@ public abstract class AbstractContainerScreenMixin {
     private static final int VORTYLIB$ATLAS_WIDTH = 18;
     @Unique
     private static final int VORTYLIB$ATLAS_HEIGHT = 22;
-
-    @Shadow
-    protected Slot hoveredSlot;
 
     @Inject(method = "renderSlot", at = @At("TAIL"))
     private void vortylib$drawGroupMarker(GuiGraphics guiGraphics, Slot slot, CallbackInfo ci) {
@@ -92,7 +89,9 @@ public abstract class AbstractContainerScreenMixin {
             return;
         }
 
-        if (((AbstractContainerScreen<?>)(Object)this).getMenu().getCarried().isEmpty() && this.hoveredSlot != null && this.hoveredSlot.hasItem()) {
+        Slot hoveredSlot = ((AbstractContainerScreenAccessor)(Object) this).vortylib$getHoveredSlot();
+
+        if (((AbstractContainerScreen<?>)(Object)this).getMenu().getCarried().isEmpty() && hoveredSlot != null && hoveredSlot.hasItem()) {
             ItemStack itemStack = hoveredSlot.getItem();
             String groupId = ExpansionHelpers.getGroupID(itemStack);
 
@@ -149,7 +148,7 @@ public abstract class AbstractContainerScreenMixin {
 
         guiGraphics.flush();
         guiGraphics.pose().pushPose();
-        guiGraphics.pose().translate(0.0F, 0.0F, 400.0F);
+        guiGraphics.pose().translate(0.0F, 0.0F, 100.0F);
 
         for (int i = 0; i < visibleSlots; i++) {
             Slot slot = ((AbstractContainerScreen<?>)(Object)this).getMenu().slots.get(i);
@@ -175,30 +174,16 @@ public abstract class AbstractContainerScreenMixin {
 
     @Unique
     private String vortylib$getExpandedGroupId(ExpandableCreativeTab tab, ItemStack stack) {
-        String iconGroupId = ExpansionHelpers.getGroupID(stack);
+        String groupId = ExpansionHelpers.getItemGroupID(stack);
 
-        if (!iconGroupId.isEmpty()) {
-            ExpandableGroup iconGroup = tab.groups.get(iconGroupId);
-
-            if (iconGroup != null) {
-                return ExpansionHelpers.isExpanded(iconGroup.icon) ? iconGroupId : null;
-            }
-
+        if (groupId == null) {
             return null;
         }
 
-        for (Map.Entry<String, ExpandableGroup> entry : tab.groups.entrySet()) {
-            ExpandableGroup group = entry.getValue();
+        ExpandableGroup group = tab.groups.get(groupId);
 
-            if (!ExpansionHelpers.isExpanded(group.icon)) {
-                continue;
-            }
-
-            for (ItemStack member : group.items) {
-                if (ItemStack.isSameItemSameTags(member, stack)) {
-                    return entry.getKey();
-                }
-            }
+        if (group != null && ExpansionHelpers.isExpanded(group.icon)) {
+            return groupId;
         }
 
         return null;
