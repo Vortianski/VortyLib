@@ -63,15 +63,16 @@ void main() {
     if (mask < 0.05) discard;
 
     vec2 uv = texCoord0 * 4.0;
-    float time = GameTime;
 
-    vec2 uv1 = uv * 0.8 + vec2(time * 0.05, time * 0.03);
+    float time = GameTime * 10.0;
+
+    vec2 uv1 = uv * 0.8 + vec2(time * 0.5, time * 0.3);
     float n1 = fbm(uv1, 3);
 
-    vec2 uv2 = uv * 1.5 + vec2(-time * 0.12, time * 0.08);
+    vec2 uv2 = uv * 1.5 + vec2(-time * 1.2, time * 0.8);
     float n2 = fbm(uv2, 3);
 
-    vec2 uv3 = uv * 3.0 + vec2(time * 0.3, time * 0.2);
+    vec2 uv3 = uv * 3.0 + vec2(time * 3.0, time * 2.0);
     float n3 = fbm(uv3, 2);
 
     float density = n1 * 0.6 + n2 * 0.3 + n3 * 0.1;
@@ -97,7 +98,7 @@ void main() {
     float starRadius = 0.08 + hash(cell + 3.14) * 0.07;
     float starShape = smoothstep(starRadius, 0.0, d);
 
-    float twinkle = sin(GameTime * 2.0 + seed * 50.0) * 0.5 + 0.5;
+    float twinkle = sin(GameTime * 5.0 + seed * 50.0) * 0.5 + 0.5;
 
     float starBrightness = starMask * starShape * (0.4 + 0.6 * twinkle);
 

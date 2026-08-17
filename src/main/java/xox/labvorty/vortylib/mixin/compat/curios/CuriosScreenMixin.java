@@ -14,6 +14,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import top.theillusivec4.curios.client.gui.CuriosScreen;
+import xox.labvorty.vortylib.data.creative_tab.ExpansionHelpers;
 import xox.labvorty.vortylib.items.defined.AdvancedItemOptions;
 import xox.labvorty.vortylib.mixin_helpers.AbstractContainerScreenAccessor;
 import xox.labvorty.vortylib.utilities.VortyLibUtilities;
@@ -31,7 +32,7 @@ public class CuriosScreenMixin {
     private void vortylib$advancedTooltipItem(GuiGraphics guiGraphics, int x, int y, CallbackInfo ci) {
         Slot hoveredSlot = ((AbstractContainerScreenAccessor)(Object)this).vortylib$getHoveredSlot();
 
-        if (hoveredSlot != null && !hoveredSlot.getItem().isEmpty()) {
+        if (hoveredSlot != null && !hoveredSlot.getItem().isEmpty() && (ExpansionHelpers.getGroupID(hoveredSlot.getItem()) == null || ExpansionHelpers.getGroupID(hoveredSlot.getItem()).isEmpty())) {
             ItemStack itemStack = hoveredSlot.getItem();
 
             if (itemStack.getItem() instanceof AdvancedItemOptions advancedItemOptions && advancedItemOptions.useExpander(itemStack)) {
@@ -71,12 +72,17 @@ public class CuriosScreenMixin {
 
         ItemStack itemStack = hoveredSlot.getItem();
 
+        if (!(ExpansionHelpers.getGroupID(hoveredSlot.getItem()) == null || ExpansionHelpers.getGroupID(hoveredSlot.getItem()).isEmpty())) {
+            vortylib$fadeHold();
+            return;
+        }
+
         if (!(itemStack.getItem() instanceof AdvancedItemOptions advancedItemOptions)) {
             vortylib$fadeHold();
             return;
         }
 
-        if (advancedItemOptions.useExpander(itemStack)) {
+        if (!advancedItemOptions.useExpander(itemStack)) {
             vortylib$fadeHold();
             return;
         }
@@ -93,7 +99,7 @@ public class CuriosScreenMixin {
                 pair.setLeft(Math.min(Math.clamp(pair.getLeft() + 1, 0, 26), 100));
 
                 if (pair.getLeft() >= 25) {
-                    advancedItemOptions.trigger(((AbstractContainerScreen<?>)(Object)this));
+                    advancedItemOptions.trigger(((AbstractContainerScreen<?>)(Object)this), itemStack);
                 }
             } else {
                 vortylib$itemHold.add(new MutablePair<>(1, item));

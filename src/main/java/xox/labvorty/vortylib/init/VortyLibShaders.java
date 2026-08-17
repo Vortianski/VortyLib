@@ -1,6 +1,8 @@
 package xox.labvorty.vortylib.init;
 
+import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.shaders.Uniform;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
@@ -19,6 +21,7 @@ import java.io.IOException;
 public class VortyLibShaders {
     public static int renderTime;
     public static float renderFrame;
+    public static Window window;
 
     public static CompatibleShaderInstance ENTITY_END_PORTAL;
     public static CompatibleShaderInstance ENTITY_TRANSLUCENT_MASK;
@@ -28,18 +31,10 @@ public class VortyLibShaders {
     public static CompatibleShaderInstance ENTITY_STATIC_NOISE;
     public static CompatibleShaderInstance ENTITY_POLYCHROMATIC;
     public static CompatibleShaderInstance ENTITY_NEBULA;
-    public static CompatibleShaderInstance ENTITY_STARFALL;
-
-    public static Uniform endPortalTime;
-    public static Uniform endPortalLayers;
-    public static Uniform staticTime;
-    public static Uniform staticLayers;
-    public static Uniform nebulaTime;
-    public static Uniform crystalTime;
-    public static Uniform starfallTime;
-    public static Uniform starfallSpeed;
-    public static Uniform starfallRotation;
-    public static Uniform starfallRotationSpeed;
+    public static CompatibleShaderInstance ENTITY_CHROMATIC_ABERRATION;
+    public static CompatibleShaderInstance ENTITY_PARALLAX;
+    public static CompatibleShaderInstance ENTITY_COLORED_GLINT;
+    public static CompatibleShaderInstance ENTITY_SPIRAL;
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void register(RegisterShadersEvent event) {
@@ -50,10 +45,16 @@ public class VortyLibShaders {
                     DefaultVertexFormat.NEW_ENTITY
             );
             event.registerShader(ENTITY_END_PORTAL, shaderInstance -> {
-                endPortalTime = shaderInstance.getUniform("GameTime");
-                endPortalLayers = shaderInstance.getUniform("EndPortalLayers");
-                endPortalTime.set((float) renderTime + renderFrame);
-                endPortalLayers.set(15);
+                Uniform time = shaderInstance.getUniform("GameTime");
+                Uniform layers = shaderInstance.getUniform("EndPortalLayers");
+
+                if (time != null) {
+                    time.set((float)renderTime + renderFrame);
+                }
+
+                if (layers != null) {
+                    layers.set(15);
+                }
 
                 ENTITY_END_PORTAL.apply();
             });
@@ -91,9 +92,10 @@ public class VortyLibShaders {
                     DefaultVertexFormat.NEW_ENTITY
             );
             event.registerShader(ENTITY_CRYSTAL, shaderInstance -> {
-                crystalTime = shaderInstance.getUniform("Time");
-                if (crystalTime != null) {
-                    crystalTime.set((float) renderTime + renderFrame);
+                Uniform time = shaderInstance.getUniform("Time");
+
+                if (time != null) {
+                    time.set((float)renderTime + renderFrame);
                 }
 
                 ENTITY_CRYSTAL.apply();
@@ -105,10 +107,16 @@ public class VortyLibShaders {
                     DefaultVertexFormat.NEW_ENTITY
             );
             event.registerShader(ENTITY_STATIC_NOISE, shaderInstance -> {
-                staticTime = shaderInstance.getUniform("GameTime");
-                staticLayers = shaderInstance.getUniform("StaticLayers");
-                staticTime.set((float) renderTime + renderFrame);
-                staticLayers.set(15);
+                Uniform time = shaderInstance.getUniform("GameTime");
+                Uniform layers = shaderInstance.getUniform("StaticLayers");
+
+                if (time != null) {
+                    time.set((float)renderTime + renderFrame);
+                }
+
+                if (layers != null) {
+                    layers.set(15);
+                }
 
                 ENTITY_STATIC_NOISE.apply();
             });
@@ -127,31 +135,83 @@ public class VortyLibShaders {
                     ResourceLocation.fromNamespaceAndPath("vortylib", "entity_nebula"),
                     DefaultVertexFormat.NEW_ENTITY);
             event.registerShader(ENTITY_NEBULA, shaderInstance -> {
-                nebulaTime = shaderInstance.getUniform("GameTime");
-                if (nebulaTime != null) {
-                    nebulaTime.set((float) renderTime + renderFrame);
+                Uniform time = shaderInstance.getUniform("GameTime");
+
+                if (time != null) {
+                    time.set((float)renderTime + renderFrame);
                 }
 
                 ENTITY_NEBULA.apply();
             });
 
-            ENTITY_STARFALL = new CompatibleShaderInstance(
+            ENTITY_CHROMATIC_ABERRATION = new CompatibleShaderInstance(
+                    event.getResourceProvider(),
+                    ResourceLocation.fromNamespaceAndPath("vortylib", "entity_chromatic_aberration"),
+                    DefaultVertexFormat.NEW_ENTITY
+            );
+            event.registerShader(ENTITY_CHROMATIC_ABERRATION, shaderInstance -> {
+                Uniform time = shaderInstance.getUniform("GameTime");
+
+                if (time != null) {
+                    time.set((float)renderTime + renderFrame);
+                }
+
+                ENTITY_CHROMATIC_ABERRATION.apply();
+            });
+
+            ENTITY_PARALLAX = new CompatibleShaderInstance(
                     event.getResourceProvider(),
                     ResourceLocation.fromNamespaceAndPath("vortylib", "entity_translucent_parallax"),
                     DefaultVertexFormat.NEW_ENTITY
             );
-            event.registerShader(ENTITY_STARFALL, shaderInstance -> {
-                starfallTime = shaderInstance.getUniform("GameTime");
-                starfallSpeed = shaderInstance.getUniform("ParallaxSpeed");
-                starfallRotation = shaderInstance.getUniform("ParallaxRotation");
-                starfallRotationSpeed = shaderInstance.getUniform("ParallaxRotationSpeed");
+            event.registerShader(ENTITY_PARALLAX, shaderInstance -> {
+                Uniform time = shaderInstance.getUniform("GameTime");
+                Uniform screenSize = shaderInstance.getUniform("ScreenSize");
 
-                starfallTime.set((float) renderTime + renderFrame);
-                starfallSpeed.set(10f, 15f);
-                starfallRotation.set(45f);
-                starfallRotationSpeed.set(0f);
+                if (time != null) {
+                    time.set((float)renderTime + renderFrame);
+                }
 
-                ENTITY_STARFALL.apply();
+                if (window != null) {
+                    if (screenSize != null) {
+                        screenSize.set((float)window.getWidth(), (float)window.getHeight());
+                    }
+                }
+
+                ENTITY_PARALLAX.apply();
+            });
+
+            ENTITY_COLORED_GLINT = new CompatibleShaderInstance(
+                    event.getResourceProvider(),
+                    ResourceLocation.fromNamespaceAndPath("vortylib", "entity_colored_glint"),
+                    DefaultVertexFormat.POSITION_TEX
+            );
+            event.registerShader(ENTITY_COLORED_GLINT, shaderInstance -> {
+                Uniform alpha = shaderInstance.GLINT_ALPHA;
+
+                if (alpha != null) {
+                    alpha.set(RenderSystem.getShaderGlintAlpha());
+                }
+
+                ENTITY_COLORED_GLINT.apply();
+            });
+
+            ENTITY_SPIRAL = new CompatibleShaderInstance(
+                    event.getResourceProvider(),
+                    ResourceLocation.fromNamespaceAndPath("vortylib", "entity_spiral"),
+                    DefaultVertexFormat.NEW_ENTITY
+            );
+            event.registerShader(ENTITY_SPIRAL, shaderInstance -> {
+                Uniform gameTime = ENTITY_SPIRAL.GAME_TIME;
+                Uniform screenSize = ENTITY_SPIRAL.getUniform("ScreenSize");
+
+                if (gameTime != null) {
+                    gameTime.set((float)renderTime + renderFrame);
+                }
+
+                if (screenSize != null && window != null) {
+                    screenSize.set((float)window.getWidth(), (float)window.getHeight());
+                }
             });
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -169,6 +229,7 @@ public class VortyLibShaders {
     public static void renderTick(RenderFrameEvent.Pre event) {
         if (!Minecraft.getInstance().isPaused()) {
             renderFrame = event.getPartialTick().getGameTimeDeltaTicks();
+            window = Minecraft.getInstance().getWindow();
         }
     }
 }

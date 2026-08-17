@@ -21,6 +21,8 @@
     { "name": "ParallaxSpeed", "type": "float", "count": 2, "values": [ 0.05, 0.02 ] },
     { "name": "ParallaxRotationSpeed", "type": "float", "count": 1,  "values": [ 0.1 ] },
     { "name": "ParallaxRotation", "type": "float", "count": 1,  "values": [ 0.0 ] },
-    { "name": "ParallaxScale", "type": "float", "count": 1,  "values": [ 1.0 ] }
+    { "name": "ParallaxScale", "type": "float", "count": 1,  "values": [ 1.0 ] },
+    { "name": "ScreenSize", "type": "float", "count": 2, "values": [ 1.0, 1.0 ] },
+    { "name": "ParallaxColor", "type": "float", "count": 4, "values": [ 1.0, 1.0, 1.0, 1.0 ] }
   ]
 }

@@ -1,5 +1,6 @@
 package xox.labvorty.vortylib.init;
 
+import com.mojang.blaze3d.shaders.Uniform;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.Util;
@@ -12,10 +13,13 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.NeoForgeRenderTypes;
 import net.neoforged.neoforge.client.event.RegisterRenderBuffersEvent;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
+import oshi.util.tuples.Pair;
 import xox.labvorty.vortylib.compat.iris.IrisRenderCompat;
+import xox.labvorty.vortylib.render.compat.CompatibleShaderInstance;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 
@@ -49,14 +53,11 @@ public class VortyLibRenderTypes {
     private static final Function<ResourceLocation, RenderType> ENTITY_POLYCHROMATIC = Util.memoize(VortyLibRenderTypes::createEntityPolychromatic);
     private static final Function<ResourceLocation, RenderType> ENTITY_POLYCHROMATIC_CULL = Util.memoize(VortyLibRenderTypes::createEntityPolychromaticCull);
     private static final Function<ResourceLocation, RenderType> ENTITY_NEBULA = Util.memoize(VortyLibRenderTypes::createEntityNebula);
-    private static final Function<List<ResourceLocation>, RenderType> ENTITY_STARFALL = Util.memoize(
-            data -> {
-                ResourceLocation textureOne = data.get(0);
-                ResourceLocation textureTwo = data.get(1);
-
-                return createEntityStarfall(textureOne, textureTwo);
-            }
-    );
+    private static final Function<ResourceLocation, RenderType> ENTITY_TRANSLUCENT_EMISSIVE_CULL = Util.memoize(VortyLibRenderTypes::createEntityTranslucentEmissiveCull);
+    private static final Function<ResourceLocation, RenderType> ENTITY_CHROMATIC_ABERRATION = Util.memoize(VortyLibRenderTypes::createEntityChromaticAberration);
+    private static final Function<ParallaxRenderOptions, RenderType> ENTITY_PARALLAX = Util.memoize(VortyLibRenderTypes::createEntityParallax);
+    private static final Map<Vector3f, RenderType> ENTITY_COLORED_GLINT = new HashMap<>();
+    private static final Function<ResourceLocation, RenderType> ENTITY_SPIRAL = Util.memoize(VortyLibRenderTypes::createEntitySpiral);
 
     private static RenderType createTextNoCull(ResourceLocation resourceLocation) {
         RenderType.CompositeState compositeState = RenderType.CompositeState.builder()
@@ -286,15 +287,88 @@ public class VortyLibRenderTypes {
         );
     }
 
-    private static RenderType createEntityStarfall(ResourceLocation textureOne, ResourceLocation textureTwo) {
+    private static RenderType createEntityTranslucentEmissiveCull(ResourceLocation resourceLocation) {
         RenderType.CompositeState compositeState = RenderType.CompositeState.builder()
-                .setShaderState(new RenderStateShard.ShaderStateShard(() -> VortyLibShaders.ENTITY_STARFALL))
+                .setShaderState(RenderStateShard.RENDERTYPE_ENTITY_TRANSLUCENT_EMISSIVE_SHADER)
+                .setTextureState(new RenderStateShard.TextureStateShard(resourceLocation, false, false))
+                .setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
+                .setCullState(RenderStateShard.CULL)
+                .setOverlayState(RenderStateShard.OVERLAY)
+                .setWriteMaskState(RenderStateShard.COLOR_DEPTH_WRITE)
+                .createCompositeState(false);
+
+        return RenderType.create(
+                "entity_translucent_emissive_cull",
+                DefaultVertexFormat.NEW_ENTITY,
+                VertexFormat.Mode.QUADS,
+                1536,
+                true,
+                true,
+                compositeState
+        );
+    }
+
+    private static RenderType createEntityChromaticAberration(ResourceLocation resourceLocation) {
+        RenderType.CompositeState compositeState = RenderType.CompositeState.builder()
+                .setShaderState(new RenderStateShard.ShaderStateShard(() -> VortyLibShaders.ENTITY_CHROMATIC_ABERRATION))
+                .setTextureState(new RenderStateShard.TextureStateShard(resourceLocation, false, false))
+                .setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
+                .setCullState(RenderStateShard.NO_CULL)
+                .setLightmapState(RenderStateShard.LIGHTMAP)
+                .setOverlayState(RenderStateShard.OVERLAY)
+                .createCompositeState(true);
+
+        return RenderType.create(
+                "entity_chromatic_aberration",
+                DefaultVertexFormat.NEW_ENTITY,
+                VertexFormat.Mode.QUADS,
+                1536,
+                true,
+                true,
+                compositeState
+        );
+    }
+
+    private static RenderType createEntityParallax(ParallaxRenderOptions parallaxRenderOptions) {
+        RenderType.CompositeState compositeState = RenderType.CompositeState.builder()
+                .setShaderState(new RenderStateShard.ShaderStateShard(() -> {
+                    CompatibleShaderInstance shaderInstance = VortyLibShaders.ENTITY_PARALLAX;
+
+                    Uniform speed = shaderInstance.getUniform("ParallaxSpeed");
+                    if (speed != null) {
+                        speed.set(parallaxRenderOptions.speed().getA(), parallaxRenderOptions.speed().getB());
+                    }
+
+                    Uniform rotation = shaderInstance.getUniform("ParallaxRotation");
+                    if (rotation != null) {
+                        rotation.set(parallaxRenderOptions.rotation());
+                    }
+
+                    Uniform rotationSpeed = shaderInstance.getUniform("ParallaxRotationSpeed");
+                    if (rotationSpeed != null) {
+                        rotationSpeed.set(parallaxRenderOptions.rotationSpeed());
+                    }
+
+                    Uniform scale = shaderInstance.getUniform("ParallaxScale");
+                    if (scale != null) {
+                        scale.set(parallaxRenderOptions.scale());
+                    }
+
+                    Uniform color = shaderInstance.getUniform("ParallaxColor");
+                    if (color != null) {
+                        color.set(parallaxRenderOptions.color.x, parallaxRenderOptions.color.y, parallaxRenderOptions.color.z, parallaxRenderOptions.color.w);
+                    }
+
+                    shaderInstance.apply();
+
+                    return shaderInstance;
+                }))
                 .setTextureState(
                         RenderStateShard.MultiTextureStateShard.builder()
-                                .add(textureOne,false,false)
+                                .add(parallaxRenderOptions.resourceLocation(),false,false)
                                 .add(ResourceLocation.fromNamespaceAndPath("minecraft", "textures/block/debug.png"), false, false)
                                 .add(ResourceLocation.fromNamespaceAndPath("minecraft", "textures/block/debug.png"), false, false)
-                                .add(textureTwo,false,false)
+                                .add(parallaxRenderOptions.maskLocation(),false,false)
                                 .build()
                 )
                 .setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
@@ -304,7 +378,58 @@ public class VortyLibRenderTypes {
                 .createCompositeState(true);
 
         return RenderType.create(
-                "entity_starfall",
+                "entity_translucent_parallax",
+                DefaultVertexFormat.NEW_ENTITY,
+                VertexFormat.Mode.QUADS,
+                1536,
+                true,
+                true,
+                compositeState
+        );
+    }
+
+    private static RenderType createEntityColoredGlint(ColoredGlintOptions coloredGlintOptions) {
+        RenderType.CompositeState compositeState = RenderType.CompositeState.builder()
+                .setShaderState(new RenderStateShard.ShaderStateShard(() -> {
+                    CompatibleShaderInstance shaderInstance = VortyLibShaders.ENTITY_COLORED_GLINT;
+
+                    Uniform color = shaderInstance.getUniform("GlintColor");
+                    if (color != null) {
+                        color.set(coloredGlintOptions.color.x, coloredGlintOptions.color.y, coloredGlintOptions.color.z);
+                    }
+
+                    return shaderInstance;
+                }))
+                .setTextureState(new RenderStateShard.TextureStateShard(ResourceLocation.fromNamespaceAndPath("vortylib", "textures/misc/enchanted_glint_entity.png"), true, false))
+                .setWriteMaskState(RenderStateShard.COLOR_WRITE)
+                .setCullState(RenderStateShard.NO_CULL)
+                .setDepthTestState(RenderStateShard.EQUAL_DEPTH_TEST)
+                .setTransparencyState(RenderStateShard.GLINT_TRANSPARENCY)
+                .setOutputState(RenderStateShard.ITEM_ENTITY_TARGET)
+                .setTexturingState(RenderStateShard.ENTITY_GLINT_TEXTURING)
+                .createCompositeState(false);
+
+        return RenderType.create(
+                "entity_colored_glint",
+                DefaultVertexFormat.POSITION_TEX,
+                VertexFormat.Mode.QUADS,
+                1536,
+                compositeState
+        );
+    }
+
+    private static RenderType createEntitySpiral(ResourceLocation resourceLocation) {
+        RenderType.CompositeState compositeState = RenderType.CompositeState.builder()
+                .setShaderState(new RenderStateShard.ShaderStateShard(() -> VortyLibShaders.ENTITY_SPIRAL))
+                .setTextureState(new RenderStateShard.TextureStateShard(resourceLocation, false, false))
+                .setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
+                .setCullState(RenderStateShard.NO_CULL)
+                .setLightmapState(RenderStateShard.LIGHTMAP)
+                .setOverlayState(RenderStateShard.OVERLAY)
+                .createCompositeState(true);
+
+        return RenderType.create(
+                "entity_spiral",
                 DefaultVertexFormat.NEW_ENTITY,
                 VertexFormat.Mode.QUADS,
                 1536,
@@ -354,13 +479,50 @@ public class VortyLibRenderTypes {
         return wrapThis(ENTITY_NEBULA.apply(resourceLocation), resourceLocation);
     }
 
-    public static RenderType getEntityStarfall(ResourceLocation textureOne, ResourceLocation textureTwo) {
-        List<ResourceLocation> data = new ArrayList<>();
+    public static RenderType getEntityTranslucentEmissiveCull(ResourceLocation resourceLocation) {
+        return ENTITY_TRANSLUCENT_EMISSIVE_CULL.apply(resourceLocation);
+    }
 
-        data.add(textureOne);
-        data.add(textureTwo);
+    public static RenderType getEntityChromaticAberration(ResourceLocation resourceLocation) {
+        return wrapThis(ENTITY_CHROMATIC_ABERRATION.apply(resourceLocation), resourceLocation);
+    }
 
-        return ENTITY_STARFALL.apply(data);
+    public static RenderType getEntityParallax(ResourceLocation resourceLocation, ResourceLocation resourceLocation0, Pair<Float, Float> speed, float rotation, float rotationSpeed, float scale) {
+        return wrapThis(ENTITY_PARALLAX.apply(new ParallaxRenderOptions(resourceLocation, resourceLocation0, speed, rotation, rotationSpeed, scale)), resourceLocation);
+    }
+
+    public static RenderType getEntityParallax(ResourceLocation resourceLocation, ResourceLocation resourceLocation0, Pair<Float, Float> speed, float rotation, float rotationSpeed, float scale, Vector4f vector4f) {
+        return wrapThis(ENTITY_PARALLAX.apply(new ParallaxRenderOptions(resourceLocation, resourceLocation0, speed, rotation, rotationSpeed, scale, vector4f)), resourceLocation);
+    }
+
+    public static RenderType getEntityColoredGlint(Vector3f color) {
+        float r = Math.round(color.x * 3f) / 3f;
+        float g = Math.round(color.y * 3f) / 3f;
+        float b = Math.round(color.z * 3f) / 3f;
+
+        Vector3f closestColor = new Vector3f(r, g, b);
+
+        RenderType renderType = ENTITY_COLORED_GLINT.get(closestColor);
+
+        if (renderType == null) {
+            throw new IllegalStateException("Missing pre-generated entity colored glint for color " + closestColor);
+        }
+
+        return wrapThis(renderType, ResourceLocation.fromNamespaceAndPath("vortylib", "textures/misc/enchanted_glint_entity.png"));
+    }
+
+    private static RenderType registerEntityColoredGlint(Vector3f color) {
+        RenderType renderType = createEntityColoredGlint(
+                new ColoredGlintOptions(color)
+        );
+
+        ENTITY_COLORED_GLINT.put(color, renderType);
+
+        return renderType;
+    }
+
+    public static RenderType getEntitySpiral(ResourceLocation resourceLocation) {
+        return wrapThis(ENTITY_SPIRAL.apply(resourceLocation), resourceLocation);
     }
 
     public static RenderType wrapThis(RenderType renderType, ResourceLocation resourceLocation) {
@@ -379,7 +541,23 @@ public class VortyLibRenderTypes {
         event.registerRenderBuffer(getEntityPolychromatic(DEBUG_TEXTURE));
         event.registerRenderBuffer(getEntityPolychromaticCull(DEBUG_TEXTURE));
         event.registerRenderBuffer(getEntityNebula(DEBUG_TEXTURE));
-        event.registerRenderBuffer(getEntityStarfall(DEBUG_TEXTURE, DEBUG_TEXTURE));
+        event.registerRenderBuffer(getEntityTranslucentEmissiveCull(DEBUG_TEXTURE));
+        event.registerRenderBuffer(getEntityChromaticAberration(DEBUG_TEXTURE));
+        event.registerRenderBuffer(getEntityParallax(DEBUG_TEXTURE, DEBUG_TEXTURE, new Pair<>(0f, 0f), 0, 0, 0));
+        for (int r = 0; r < 4; r++) {
+            for (int g = 0; g < 4; g++) {
+                for (int b = 0; b < 4; b++) {
+                    Vector3f color = new Vector3f(
+                            r / 3f,
+                            g / 3f,
+                            b / 3f
+                    );
+
+                    event.registerRenderBuffer(registerEntityColoredGlint(color));
+                }
+            }
+        }
+        event.registerRenderBuffer(getEntitySpiral(DEBUG_TEXTURE));
     }
 
     private static class CustomizableTextureState extends RenderStateShard.TextureStateShard {
@@ -397,5 +575,22 @@ public class VortyLibRenderTypes {
             this.mipmap = this.mipmapSupplier.getAsBoolean();
             super.setupRenderState();
         }
+    }
+
+    private record ColoredGlintOptions(
+            Vector3f color
+    ) {}
+
+    private record ParallaxRenderOptions(ResourceLocation resourceLocation, ResourceLocation maskLocation, Pair<Float, Float> speed, float rotation, float rotationSpeed, float scale, Vector4f color) {
+            public ParallaxRenderOptions(
+                    ResourceLocation resourceLocation,
+                    ResourceLocation maskLocation,
+                    Pair<Float, Float> speed,
+                    float rotation,
+                    float rotationSpeed,
+                    float scale
+            ) {
+                this(resourceLocation, maskLocation, speed, rotation, rotationSpeed, scale, new Vector4f(1, 1, 1, 1));
+            }
     }
 }

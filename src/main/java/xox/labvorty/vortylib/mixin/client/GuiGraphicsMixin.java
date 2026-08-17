@@ -5,21 +5,22 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.client.ItemDecoratorHandler;
 import org.jetbrains.annotations.Nullable;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xox.labvorty.vortylib.items.defined.AdvancedItemOptions;
+import xox.labvorty.vortylib.mixin_helpers.GuiGraphicsAccessor;
 
 @Mixin(GuiGraphics.class)
-public abstract class GuiGraphicsMixin {
+public abstract class GuiGraphicsMixin implements GuiGraphicsAccessor {
+    @Mutable
     @Shadow
     @Final
     private PoseStack pose;
@@ -74,5 +75,10 @@ public abstract class GuiGraphicsMixin {
                 ci.cancel();
             }
         }
+    }
+
+    @Unique
+    public void vortylib$setPose(PoseStack poseStack) {
+        this.pose = poseStack;
     }
 }

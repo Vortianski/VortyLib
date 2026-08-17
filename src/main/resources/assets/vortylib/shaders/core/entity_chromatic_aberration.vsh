@@ -25,9 +25,6 @@ out vec4 vertexColor;
 out vec4 lightMapColor;
 out vec4 overlayColor;
 out vec2 texCoord0;
-out vec3 fragViewPos;
-out vec3 viewNormal;
-out vec3 localPos;
 
 void main() {
     gl_Position = ProjMat * ModelViewMat * vec4(Position, 1.0);
@@ -37,11 +34,4 @@ void main() {
     lightMapColor = texelFetch(Sampler2, UV2 / 16, 0);
     overlayColor = texelFetch(Sampler1, UV1, 0);
     texCoord0 = UV0;
-
-    vec4 mvPos = ModelViewMat * vec4(Position, 1.0);
-    fragViewPos = mvPos.xyz;
-
-    viewNormal = normalize(mat3(ModelViewMat) * Normal);
-
-    localPos = Position;
 }

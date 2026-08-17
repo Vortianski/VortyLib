@@ -77,20 +77,21 @@ vec4 safeSample(sampler2D s, vec2 uv) {
 
 void main() {
     vec4 base = texture(Sampler0, texCoord0);
+    float time = Time * 100.0;
 
     if (base.a < 0.02) {
         discard;
     }
 
     vec2 timeOffset = vec2(
-        sin(Time * Speed * 0.37 + Seed * 1.3),
-        cos(Time * Speed * 0.23 - Seed * 2.1)
+    sin(time * Speed * 0.37 + Seed * 1.3),
+    cos(time * Speed * 0.23 - Seed * 2.1)
     ) * 0.25;
 
     vec2 pos = texCoord0 * Scale
-        + vec2(
-        Time * Speed * 0.35,
-        sin(Time * Speed * 0.5) * 0.75
+    + vec2(
+    time * Speed * 0.35,
+    sin(time * Speed * 0.5) * 0.75
     );
 
     vec2 cell = voronoiNoise(pos);

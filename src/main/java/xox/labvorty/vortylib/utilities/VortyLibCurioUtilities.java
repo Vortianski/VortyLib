@@ -11,7 +11,11 @@ import top.theillusivec4.curios.api.CuriosApi;
 import top.theillusivec4.curios.api.SlotContext;
 import top.theillusivec4.curios.api.SlotResult;
 import top.theillusivec4.curios.api.type.capability.ICuriosItemHandler;
+import top.theillusivec4.curios.api.type.inventory.ICurioStacksHandler;
+import top.theillusivec4.curios.api.type.inventory.IDynamicStackHandler;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
@@ -64,5 +68,76 @@ public class VortyLibCurioUtilities {
                 });
             }
         });
+    }
+
+    public record CurioMatch<T>(ItemStack stack, T value) {}
+
+    @Nullable
+    public static <T> CurioMatch<T> findFirstCurioOfType(LivingEntity livingEntity, Class<T> type) {
+        Optional<ICuriosItemHandler> optionalHandler = CuriosApi.getCuriosInventory(livingEntity);
+        if (optionalHandler.isEmpty()) {
+            return null;
+        }
+
+        for (ICurioStacksHandler stacksHandler : optionalHandler.get().getCurios().values()) {
+            IDynamicStackHandler stacks = stacksHandler.getStacks();
+
+            for (int i = 0; i < stacks.getSlots(); i++) {
+                ItemStack stack = stacks.getStackInSlot(i);
+
+                if (!stack.isEmpty() && type.isInstance(stack.getItem())) {
+                    return new CurioMatch<>(stack, type.cast(stack.getItem()));
+                }
+            }
+        }
+
+        return null;
+    }
+
+    @Nullable
+    public static <T> CurioMatch<T> findFirstCurioOfType(LivingEntity livingEntity, Class<T> type, String slotId) {
+        Optional<ICuriosItemHandler> optionalHandler = CuriosApi.getCuriosInventory(livingEntity);
+        if (optionalHandler.isEmpty()) {
+            return null;
+        }
+
+        ICurioStacksHandler stacksHandler = optionalHandler.get().getCurios().get(slotId);
+        if (stacksHandler == null) {
+            return null;
+        }
+
+        IDynamicStackHandler stacks = stacksHandler.getStacks();
+        for (int i = 0; i < stacks.getSlots(); i++) {
+            ItemStack stack = stacks.getStackInSlot(i);
+
+            if (!stack.isEmpty() && type.isInstance(stack.getItem())) {
+                return new CurioMatch<>(stack, type.cast(stack.getItem()));
+            }
+        }
+
+        return null;
+    }
+
+    public static <T> List<CurioMatch<T>> findAllCuriosOfType(LivingEntity livingEntity, Class<T> type) {
+        List<CurioMatch<T>> results = new ArrayList<>();
+
+        Optional<ICuriosItemHandler> optionalHandler = CuriosApi.getCuriosInventory(livingEntity);
+        if (optionalHandler.isEmpty()) {
+            return results;
+        }
+
+        for (ICurioStacksHandler stacksHandler : optionalHandler.get().getCurios().values()) {
+            IDynamicStackHandler stacks = stacksHandler.getStacks();
+
+            for (int i = 0; i < stacks.getSlots(); i++) {
+                ItemStack stack = stacks.getStackInSlot(i);
+
+                if (!stack.isEmpty() && type.isInstance(stack.getItem())) {
+                    results.add(new CurioMatch<>(stack, type.cast(stack.getItem())));
+                }
+            }
+        }
+
+        return results;
     }
 }

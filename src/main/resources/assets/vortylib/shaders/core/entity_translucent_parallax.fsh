@@ -14,6 +14,8 @@ uniform vec2 ParallaxSpeed;
 uniform float ParallaxRotationSpeed;
 uniform float ParallaxRotation;
 uniform float ParallaxScale;
+uniform vec2 ScreenSize;
+uniform vec4 ParallaxColor;
 
 in float vertexDistance;
 in vec4 vertexColor;
@@ -33,6 +35,9 @@ void main() {
 
     vec2 screenUV = texProj0.xy / texProj0.w;
 
+    float aspect = ScreenSize.x / ScreenSize.y;
+    screenUV.x *= aspect;
+
     screenUV *= ParallaxScale;
 
     float angle = ParallaxRotation + GameTime * ParallaxRotationSpeed;
@@ -44,7 +49,11 @@ void main() {
 
     vec4 parallaxColor = texture(Sampler3, screenUV);
 
-    baseColor.rgb += parallaxColor.rgb * parallaxColor.a;
+    if (ParallaxColor == vec4(1.0)) {
+        baseColor.rgb += parallaxColor.rgb * parallaxColor.a;
+    } else {
+        baseColor.rgb += ParallaxColor.rgb * parallaxColor.a * ParallaxColor.a;
+    }
 
     baseColor *= vertexColor * ColorModulator;
     baseColor.rgb = mix(overlayColor.rgb, baseColor.rgb, overlayColor.a);

@@ -65,7 +65,7 @@ public abstract class AbstractContainerScreenMixin implements AbstractContainerS
         if (hoveredSlot != null && !hoveredSlot.getItem().isEmpty()) {
             ItemStack itemStack = hoveredSlot.getItem();
 
-            if (itemStack.getItem() instanceof AdvancedItemOptions advancedItemOptions && advancedItemOptions.useExpander(itemStack)) {
+            if (itemStack.getItem() instanceof AdvancedItemOptions advancedItemOptions && advancedItemOptions.useExpander(itemStack) && (ExpansionHelpers.getGroupID(hoveredSlot.getItem()) == null || ExpansionHelpers.getGroupID(hoveredSlot.getItem()).isEmpty())) {
                 Item item = itemStack.getItem();
 
                 MutablePair<Integer, Item> pair = vortylib$itemHold.stream()
@@ -105,6 +105,11 @@ public abstract class AbstractContainerScreenMixin implements AbstractContainerS
             return;
         }
 
+        if (!(ExpansionHelpers.getGroupID(hoveredSlot.getItem()) == null || ExpansionHelpers.getGroupID(hoveredSlot.getItem()).isEmpty())) {
+            vortylib$fadeHold();
+            return;
+        }
+
         if (!advancedItemOptions.useExpander(itemStack)) {
             vortylib$fadeHold();
             return;
@@ -122,7 +127,7 @@ public abstract class AbstractContainerScreenMixin implements AbstractContainerS
                 pair.setLeft(Math.min(Math.clamp(pair.getLeft() + 1, 0, 26), 100));
 
                 if (pair.getLeft() >= 25) {
-                    advancedItemOptions.trigger(((AbstractContainerScreen<?>)(Object)this));
+                    advancedItemOptions.trigger(((AbstractContainerScreen<?>)(Object)this), itemStack);
                 }
             } else {
                 vortylib$itemHold.add(new MutablePair<>(1, item));

@@ -34,8 +34,9 @@ public interface AdvancedItemOptions {
      * Called on the client tooltip rendering only. Implementations should be annotated with {@code @OnlyIn(Dist.CLIENT)}.
      *
      * @param lastScreen the screen that was open before this one was triggered
+     * @param itemStack ItemStack that was hovered on
      */
-    void trigger(Screen lastScreen);
+    void trigger(Screen lastScreen, ItemStack itemStack);
 
     /**
      * Whether item should have item decorator that renders white overlay for cooldown
