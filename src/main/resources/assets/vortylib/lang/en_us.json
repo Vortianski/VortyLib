@@ -1,5 +1,8 @@
 {
   "vortylib.chaoslib_warning": "VortyLib requires ChaosApi to be installed if Iris Shaders is running, to fix some incompatibilities.",
   "vortylib.chaoslib_warning.hint": "[Click here to disable this warning]",
-  "vortylib.chaoslib_warning.disabled": "ChaosApi warning disabled."
+  "vortylib.chaoslib_warning.disabled": "ChaosApi warning disabled.",
+  "vortylib.item_browser.add_item": "Click to add item",
+  "vortylib.entity_browser.add_entity": "Click to add entity",
+  "vortylib.string_entry.add_entry": "Add String Entry"
 }

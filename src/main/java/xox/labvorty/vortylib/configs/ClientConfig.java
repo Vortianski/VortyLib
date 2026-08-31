@@ -5,9 +5,17 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 public class ClientConfig {
     public static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
 
-    public static final ModConfigSpec.ConfigValue<Boolean> CHAOSLIB_WARNING = BUILDER
+    public static final ModConfigSpec.BooleanValue CHAOSLIB_WARNING = BUILDER
             .comment("Display a message if ChaosLib is not installed when Iris is running")
             .define("chaoslibWarning", true);
+
+    public static final ModConfigSpec.IntValue UI_THEME = BUILDER
+            .comment("Determines the theme of buttons in config screens")
+            .defineInRange("uiTheme", 0, 0, 2);
+
+    public static final ModConfigSpec.IntValue PANORAMA_THEME = BUILDER
+            .comment("Determines the theme of panorama in config screens")
+            .defineInRange("panoramaTheme", 0, 0, 2);
 
     public static final ModConfigSpec SPEC = BUILDER.build();
 }

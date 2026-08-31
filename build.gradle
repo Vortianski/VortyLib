@@ -90,7 +90,7 @@ configurations {
 dependencies {
     //CuriosAPI
     compileOnlyApi("top.theillusivec4.curios:curios-neoforge:${property("curios_version")}")
-    runtimeOnly("top.theillusivec4.curios:curios-neoforge:${property("curios_version")}")
+    //runtimeOnly("top.theillusivec4.curios:curios-neoforge:${property("curios_version")}")
 
     //Iris Shaders
     runtimeOnly("curse.maven:sodium-394468:6382651")
