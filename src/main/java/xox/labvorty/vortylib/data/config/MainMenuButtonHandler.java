@@ -9,6 +9,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ScreenEvent;
+import xox.labvorty.vortylib.configs.ClientConfig;
 import xox.labvorty.vortylib.gui.screen.ModListScreen;
 import xox.labvorty.vortylib.gui.widget.ThemedButton;
 
@@ -20,11 +21,11 @@ public class MainMenuButtonHandler {
     public static void onScreenInit(ScreenEvent.Init.Post event) {
         Screen screen = event.getScreen();
 
-        if (screen instanceof TitleScreen) {
+        if (screen instanceof TitleScreen && ClientConfig.MENU_BUTTON.get()) {
             int x = screen.width / 2 + 104;
             int y = screen.height / 4 + 56;
             event.addListener(buildButton(x, y));
-        } else if (screen instanceof PauseScreen) {
+        } else if (screen instanceof PauseScreen && ClientConfig.PAUSE_BUTTON.get()) {
             int x = screen.width / 2 + 111;
             int y = screen.height / 4 + 50;
 

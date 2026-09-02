@@ -16,6 +16,7 @@ import top.theillusivec4.curios.api.type.inventory.IDynamicStackHandler;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
@@ -94,6 +95,28 @@ public class VortyLibCurioUtilities {
         return null;
     }
 
+    public static <T> boolean modifyFirstCurioOfType(LivingEntity livingEntity, Class<T> type, boolean remove) {
+        Optional<ICuriosItemHandler> optionalHandler = CuriosApi.getCuriosInventory(livingEntity);
+        if (optionalHandler.isEmpty()) {
+            return false;
+        }
+
+        for (ICurioStacksHandler stacksHandler : optionalHandler.get().getCurios().values()) {
+            IDynamicStackHandler stacks = stacksHandler.getStacks();
+
+            for (int i = 0; i < stacks.getSlots(); i++) {
+                ItemStack stack = stacks.getStackInSlot(i);
+
+                if (!stack.isEmpty() && type.isInstance(stack.getItem())) {
+                    if (remove) stack.setCount(0);
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     @Nullable
     public static <T> CurioMatch<T> findFirstCurioOfType(LivingEntity livingEntity, Class<T> type, String slotId) {
         Optional<ICuriosItemHandler> optionalHandler = CuriosApi.getCuriosInventory(livingEntity);
@@ -139,5 +162,43 @@ public class VortyLibCurioUtilities {
         }
 
         return results;
+    }
+
+    public static boolean insertIntoFirstAvailableSlotOfType(LivingEntity livingEntity, ItemStack itemStack) {
+        if (itemStack == null || itemStack.isEmpty()) {
+            return false;
+        }
+
+        Optional<ICuriosItemHandler> optionalHandler = CuriosApi.getCuriosInventory(livingEntity);
+        if (optionalHandler.isEmpty()) {
+            return false;
+        }
+
+        ICuriosItemHandler itemHandler = optionalHandler.get();
+
+        for (Map.Entry<String, ICurioStacksHandler> entry : itemHandler.getCurios().entrySet()) {
+            String identifier = entry.getKey();
+            ICurioStacksHandler stacksHandler = entry.getValue();
+            IDynamicStackHandler stacks = stacksHandler.getStacks();
+
+            for (int i = 0; i < stacks.getSlots(); i++) {
+                ItemStack stackInSlot = stacks.getStackInSlot(i);
+
+                if (stackInSlot.isEmpty() && stacks.isItemValid(i, itemStack)) {
+                    int limit = stacks.getSlotLimit(i);
+                    int moveCount = Math.min(itemStack.getCount(), limit);
+
+                    ItemStack toInsert = itemStack.copy();
+                    toInsert.setCount(moveCount);
+
+                    itemHandler.setEquippedCurio(identifier, i, toInsert);
+                    itemStack.shrink(moveCount);
+
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }

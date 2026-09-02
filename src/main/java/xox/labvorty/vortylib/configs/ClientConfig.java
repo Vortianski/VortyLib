@@ -17,5 +17,19 @@ public class ClientConfig {
             .comment("Determines the theme of panorama in config screens")
             .defineInRange("panoramaTheme", 0, 0, 2);
 
+    public static final ModConfigSpec.BooleanValue MENU_BUTTON = BUILDER
+            .comment("Whether config button is rendered in main menu")
+            .define(
+                    "menuConfigButton",
+                    true
+            );
+
+    public static final ModConfigSpec.BooleanValue PAUSE_BUTTON = BUILDER
+            .comment("Whether config button is rendered in pause menu")
+            .define(
+                    "pauseConfigButton",
+                    true
+            );
+
     public static final ModConfigSpec SPEC = BUILDER.build();
 }
