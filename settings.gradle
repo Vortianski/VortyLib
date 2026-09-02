@@ -8,4 +8,10 @@ plugins {
     id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
 }
 
-includeBuild("../chaoslib-1.21.1")
+def chaosLibPath = System.getenv("CHAOSLIB_PATH")
+
+if (chaosLibPath) {
+    includeBuild(chaosLibPath)
+} else if (file("../chaoslib-1.21.1").exists()) {
+    includeBuild("../chaoslib-1.21.1")
+}
