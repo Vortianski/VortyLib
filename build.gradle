@@ -99,7 +99,7 @@ dependencies {
     //ChaosLib
     if (System.getenv("CHAOSLIB_PATH") || file("../chaoslib-1.21.1").exists()) {
         implementation "dev.elifian.chaoslib:common:1.1.0"
-        runtimeOnly("dev.elifian.chaoslib:neoforge:1.1.0")
+        //runtimeOnly("dev.elifian.chaoslib:neoforge:1.1.0")
     }
 }
 

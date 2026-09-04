@@ -1,8 +1,9 @@
 package xox.labvorty.vortylib.data.config.entries;
 
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.network.chat.Component;
+
+import javax.annotation.Nullable;
 
 public abstract class ConfigEntry<T> {
     protected final Component label;

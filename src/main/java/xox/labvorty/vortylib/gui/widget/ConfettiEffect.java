@@ -1,9 +1,10 @@
 package xox.labvorty.vortylib.gui.widget;
 
+import net.minecraft.client.gui.GuiGraphics;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import net.minecraft.client.gui.GuiGraphics;
 
 public class ConfettiEffect {
     private static final int PARTICLES_PER_TRIGGER = 60;

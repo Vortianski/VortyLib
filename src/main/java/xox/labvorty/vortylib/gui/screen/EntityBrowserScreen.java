@@ -1,7 +1,5 @@
 package xox.labvorty.vortylib.gui.screen;
 
-import java.util.ArrayList;
-import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -19,6 +17,9 @@ import xox.labvorty.vortylib.gui.theme.PanoramaTheme;
 import xox.labvorty.vortylib.gui.theme.UiTheme;
 import xox.labvorty.vortylib.gui.widget.ThemedButton;
 import xox.labvorty.vortylib.gui.widget.ThemedEditBox;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class EntityBrowserScreen extends Screen {
     private static final int ROW_HEIGHT = 28;

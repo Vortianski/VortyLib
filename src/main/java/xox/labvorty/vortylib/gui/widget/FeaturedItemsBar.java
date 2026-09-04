@@ -1,6 +1,5 @@
 package xox.labvorty.vortylib.gui.widget;
 
-import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -9,6 +8,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
 
 public class FeaturedItemsBar extends AbstractWidget {
     private static final int EDGE_FADE_WIDTH = 30;

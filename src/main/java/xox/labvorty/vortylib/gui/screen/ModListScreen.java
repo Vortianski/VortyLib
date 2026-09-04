@@ -1,13 +1,7 @@
 package xox.labvorty.vortylib.gui.screen;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
-import java.util.stream.Collectors;
-import net.minecraft.Util;
 import net.minecraft.ChatFormatting;
+import net.minecraft.Util;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.Screen;
@@ -23,7 +17,12 @@ import xox.labvorty.vortylib.configs.ClientConfig;
 import xox.labvorty.vortylib.data.config.*;
 import xox.labvorty.vortylib.gui.theme.PanoramaTheme;
 import xox.labvorty.vortylib.gui.theme.UiTheme;
-import xox.labvorty.vortylib.gui.widget.*;
+import xox.labvorty.vortylib.gui.widget.ConfettiEffect;
+import xox.labvorty.vortylib.gui.widget.FeaturedItemsBar;
+import xox.labvorty.vortylib.gui.widget.ThemedButton;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class ModListScreen extends Screen {
     private static final int SOCIAL_SIZE = 18;

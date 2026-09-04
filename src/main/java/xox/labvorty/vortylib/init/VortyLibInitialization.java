@@ -5,7 +5,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import xox.labvorty.vortylib.configs.ClientConfig;
 import xox.labvorty.vortylib.data.config.ConfigHolder;
 import xox.labvorty.vortylib.data.config.ModEntry;
@@ -15,12 +15,10 @@ import xox.labvorty.vortylib.gui.theme.PanoramaTheme;
 import xox.labvorty.vortylib.gui.theme.ThemeSpriteSet;
 import xox.labvorty.vortylib.gui.theme.UiTheme;
 
-import java.util.List;
-
 @EventBusSubscriber
 public class VortyLibInitialization {
     @SubscribeEvent
-    public static void onCommon(FMLCommonSetupEvent event) {
+    public static void onCommon(FMLClientSetupEvent event) {
         event.enqueueWork(() -> {
             UiTheme.setCurrent(ClientConfig.UI_THEME.get());
 

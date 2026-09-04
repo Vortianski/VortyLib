@@ -1,12 +1,13 @@
 package xox.labvorty.vortylib.data.config;
 
+import net.minecraft.network.chat.Component;
+import net.neoforged.neoforge.common.ModConfigSpec;
+import xox.labvorty.vortylib.data.config.entries.*;
+
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import net.minecraft.network.chat.Component;
-import net.neoforged.neoforge.common.ModConfigSpec;
-import xox.labvorty.vortylib.data.config.entries.*;
 
 public class ConfigHolder {
     private final ModConfigSpec spec;

@@ -1,14 +1,9 @@
 package xox.labvorty.vortylib.gui.screen;
 
-import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
-import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
@@ -20,6 +15,11 @@ import xox.labvorty.vortylib.data.config.entries.ConfigEntry;
 import xox.labvorty.vortylib.gui.theme.PanoramaTheme;
 import xox.labvorty.vortylib.gui.theme.UiTheme;
 import xox.labvorty.vortylib.gui.widget.ThemedButton;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 public class ModConfigScreen extends Screen {
     private static final int ROW_HEIGHT = 24;

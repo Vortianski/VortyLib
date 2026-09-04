@@ -2,7 +2,6 @@ package xox.labvorty.vortylib.gui.screen;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.CubeMap;
-import net.minecraft.client.renderer.PanoramaRenderer;
 import net.minecraft.resources.ResourceLocation;
 import xox.labvorty.vortylib.gui.theme.PanoramaTheme;
 import xox.labvorty.vortylib.gui.widget.PanoramaConfiguredRenderer;

@@ -19,7 +19,9 @@ import oshi.util.tuples.Pair;
 import xox.labvorty.vortylib.compat.iris.IrisRenderCompat;
 import xox.labvorty.vortylib.render.compat.CompatibleShaderInstance;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 

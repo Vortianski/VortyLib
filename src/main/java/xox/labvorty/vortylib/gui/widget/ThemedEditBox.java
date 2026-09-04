@@ -1,7 +1,5 @@
 package xox.labvorty.vortylib.gui.widget;
 
-import java.lang.reflect.Field;
-import java.util.function.BiFunction;
 import net.minecraft.Util;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -11,6 +9,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import xox.labvorty.vortylib.gui.theme.UiTheme;
+
+import java.lang.reflect.Field;
+import java.util.function.BiFunction;
 
 public class ThemedEditBox extends EditBox {
 private static final Field F_DISPLAY_POS;
