@@ -1,0 +1,23 @@
+{
+  "required": true,
+  "minVersion": "0.8.5",
+  "compatibilityLevel": "JAVA_17",
+  "package": "xox.labvorty.vortylib.mixins",
+  "refmap": "vortylib.refmap.json",
+  "mixins": [
+  ],
+  "client": [
+    "client.AbstractContainerScreenMixin",
+    "client.BlockModelDefinitionDeserializerMixin",
+    "client.CreativeModeInventoryScreenAccessor",
+    "client.CreativeModeInventoryScreenMixin",
+    "client.GuiGraphicsMixin",
+    "compat.curios.CuriosScreenMixin",
+    "client.RenderTypeMixin",
+    "client.FontMixin"
+  ],
+  "plugin": "xox.labvorty.vortylib.mixins.compat.VortyLibMixinPlugin",
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
