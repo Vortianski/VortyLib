@@ -75,7 +75,6 @@ public class VortyLibInitialization {
                     ModEntry.builder("vortylib", Component.literal("VortyLib"))
                             .banner(ResourceLocation.fromNamespaceAndPath("vortylib", "textures/gui/vortylib.png"), 115, 64)
                             .clientConfig(ConfigHolder.builder(ClientConfig.SPEC)
-                                    .addBoolean(Component.literal("ChaosLib Warning"), Component.literal("Show a warning if ChaosLib is not loaded"), ClientConfig.CHAOSLIB_WARNING, true)
                                     .addInt(Component.literal("UI Theme"), Component.literal("Determines the theme of buttons in config screens"), ClientConfig.UI_THEME, 0, 0, 2)
                                     .addInt(Component.literal("Panorama Theme"), Component.literal("Determines the theme of panorama in config screens"), ClientConfig.PANORAMA_THEME, 0, 0, 2)
                                     .addBoolean(Component.literal("Menu Config Button"), Component.literal("Whether config button is rendered in main menu"), ClientConfig.MENU_BUTTON, true)

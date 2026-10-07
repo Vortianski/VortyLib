@@ -15,7 +15,8 @@
     "compat.curios.CuriosScreenMixin",
     "client.GuiGraphicsMixin",
     "client.GameRendererMixin",
-    "client.PostChainMixin"
+    "client.PostChainMixin",
+    "client.PlayerRendererMixin"
   ],
   "plugin": "xox.labvorty.vortylib.mixin.compat.VortyLibMixinPlugin",
   "injectors": {

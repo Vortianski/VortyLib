@@ -95,12 +95,6 @@ dependencies {
     //Iris Shaders
     runtimeOnly("curse.maven:sodium-394468:6382651")
     implementation("curse.maven:irisshaders-455508:6661598")
-
-    //ChaosLib
-    if (System.getenv("CHAOSLIB_PATH") || file("../chaoslib-1.21.1").exists()) {
-        implementation "dev.elifian.chaoslib:common:1.1.0"
-        //runtimeOnly("dev.elifian.chaoslib:neoforge:1.1.0")
-    }
 }
 
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {

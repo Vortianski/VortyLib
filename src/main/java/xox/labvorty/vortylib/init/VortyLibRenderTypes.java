@@ -16,7 +16,6 @@ import net.neoforged.neoforge.client.event.RegisterRenderBuffersEvent;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import oshi.util.tuples.Pair;
-import xox.labvorty.vortylib.compat.iris.IrisRenderCompat;
 import xox.labvorty.vortylib.render.compat.CompatibleShaderInstance;
 
 import java.util.HashMap;
@@ -441,44 +440,65 @@ public class VortyLibRenderTypes {
         );
     }
 
+    private static RenderType createFluidTranslucent() {
+        RenderType.CompositeState compositeState = RenderType.CompositeState.builder()
+                .setLightmapState(RenderStateShard.LIGHTMAP)
+                .setShaderState(RenderStateShard.RENDERTYPE_TRANSLUCENT_SHADER)
+                .setTextureState(RenderStateShard.BLOCK_SHEET_MIPPED)
+                .setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
+                .setOutputState(RenderStateShard.TRANSLUCENT_TARGET)
+                .setWriteMaskState(RenderStateShard.COLOR_DEPTH_WRITE)
+                .createCompositeState(true);
+
+        return RenderType.create(
+                "fluid_translucent",
+                DefaultVertexFormat.BLOCK,
+                VertexFormat.Mode.QUADS,
+                786432,
+                false,
+                true,
+                compositeState
+        );
+    }
+
     public static RenderType getTextNoCull(ResourceLocation resourceLocation) {
-        return wrapThis(TEXT_NO_CULL.apply(resourceLocation), resourceLocation);
+        return TEXT_NO_CULL.apply(resourceLocation);
     }
 
     public static RenderType getEntityEndPortal(ResourceLocation textureOne, ResourceLocation textureTwo, ResourceLocation textureThree) {
-        return wrapThis(ENTITY_END_PORTAL.apply(List.of(textureOne, textureTwo, textureThree)), textureTwo);
+        return ENTITY_END_PORTAL.apply(List.of(textureOne, textureTwo, textureThree));
     }
 
     public static RenderType getEntityTranslucentMask(ResourceLocation textureOne, ResourceLocation textureTwo) {
-        return wrapThis(ENTITY_TRANSLUCENT_MASK.apply(List.of(textureOne, textureTwo)), textureOne);
+        return ENTITY_TRANSLUCENT_MASK.apply(List.of(textureOne, textureTwo));
     }
 
     public static RenderType getEntityNegative(ResourceLocation resourceLocation) {
-        return wrapThis(ENTITY_NEGATIVE.apply(resourceLocation), resourceLocation);
+        return ENTITY_NEGATIVE.apply(resourceLocation);
     }
 
     public static RenderType getEntityTrueNegative(ResourceLocation resourceLocation) {
-        return wrapThis(ENTITY_TRUE_NEGATIVE.apply(resourceLocation), resourceLocation);
+        return ENTITY_TRUE_NEGATIVE.apply(resourceLocation);
     }
 
     public static RenderType getEntityCrystal(ResourceLocation resourceLocation) {
-        return wrapThis(ENTITY_CRYSTAL.apply(resourceLocation), resourceLocation);
+        return ENTITY_CRYSTAL.apply(resourceLocation);
     }
 
     public static RenderType getEntityStaticNoise(ResourceLocation resourceLocation) {
-        return wrapThis(ENTITY_STATIC_NOISE.apply(resourceLocation), resourceLocation);
+        return ENTITY_STATIC_NOISE.apply(resourceLocation);
     }
 
     public static RenderType getEntityPolychromatic(ResourceLocation resourceLocation) {
-        return wrapThis(ENTITY_POLYCHROMATIC.apply(resourceLocation), resourceLocation);
+        return ENTITY_POLYCHROMATIC.apply(resourceLocation);
     }
 
     public static RenderType getEntityPolychromaticCull(ResourceLocation resourceLocation) {
-        return wrapThis(ENTITY_POLYCHROMATIC_CULL.apply(resourceLocation), resourceLocation);
+        return ENTITY_POLYCHROMATIC_CULL.apply(resourceLocation);
     }
 
     public static RenderType getEntityNebula(ResourceLocation resourceLocation) {
-        return wrapThis(ENTITY_NEBULA.apply(resourceLocation), resourceLocation);
+        return ENTITY_NEBULA.apply(resourceLocation);
     }
 
     public static RenderType getEntityTranslucentEmissiveCull(ResourceLocation resourceLocation) {
@@ -486,15 +506,19 @@ public class VortyLibRenderTypes {
     }
 
     public static RenderType getEntityChromaticAberration(ResourceLocation resourceLocation) {
-        return wrapThis(ENTITY_CHROMATIC_ABERRATION.apply(resourceLocation), resourceLocation);
+        return ENTITY_CHROMATIC_ABERRATION.apply(resourceLocation);
     }
 
     public static RenderType getEntityParallax(ResourceLocation resourceLocation, ResourceLocation resourceLocation0, Pair<Float, Float> speed, float rotation, float rotationSpeed, float scale) {
-        return wrapThis(ENTITY_PARALLAX.apply(new ParallaxRenderOptions(resourceLocation, resourceLocation0, speed, rotation, rotationSpeed, scale)), resourceLocation);
+        return ENTITY_PARALLAX.apply(new ParallaxRenderOptions(resourceLocation, resourceLocation0, speed, rotation, rotationSpeed, scale));
     }
 
     public static RenderType getEntityParallax(ResourceLocation resourceLocation, ResourceLocation resourceLocation0, Pair<Float, Float> speed, float rotation, float rotationSpeed, float scale, Vector4f vector4f) {
-        return wrapThis(ENTITY_PARALLAX.apply(new ParallaxRenderOptions(resourceLocation, resourceLocation0, speed, rotation, rotationSpeed, scale, vector4f)), resourceLocation);
+        return ENTITY_PARALLAX.apply(new ParallaxRenderOptions(resourceLocation, resourceLocation0, speed, rotation, rotationSpeed, scale, vector4f));
+    }
+
+    public static RenderType getFluidTranslucent() {
+        return createFluidTranslucent();
     }
 
     public static RenderType getEntityColoredGlint(Vector3f color) {
@@ -510,7 +534,7 @@ public class VortyLibRenderTypes {
             throw new IllegalStateException("Missing pre-generated entity colored glint for color " + closestColor);
         }
 
-        return wrapThis(renderType, ResourceLocation.fromNamespaceAndPath("vortylib", "textures/misc/enchanted_glint_entity.png"));
+        return renderType;
     }
 
     private static RenderType registerEntityColoredGlint(Vector3f color) {
@@ -524,11 +548,7 @@ public class VortyLibRenderTypes {
     }
 
     public static RenderType getEntitySpiral(ResourceLocation resourceLocation) {
-        return wrapThis(ENTITY_SPIRAL.apply(resourceLocation), resourceLocation);
-    }
-
-    public static RenderType wrapThis(RenderType renderType, ResourceLocation resourceLocation) {
-        return IrisRenderCompat.wrapEntityRenderLayer(renderType, RenderType.entityTranslucent(resourceLocation));
+        return ENTITY_SPIRAL.apply(resourceLocation);
     }
 
     @SubscribeEvent
@@ -560,6 +580,7 @@ public class VortyLibRenderTypes {
             }
         }
         event.registerRenderBuffer(getEntitySpiral(DEBUG_TEXTURE));
+        event.registerRenderBuffer(getFluidTranslucent());
     }
 
     private static class CustomizableTextureState extends RenderStateShard.TextureStateShard {
