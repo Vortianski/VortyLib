@@ -8,4 +8,5 @@ import java.util.function.Function;
 public interface FontAccessor {
     Function<ResourceLocation, FontSet> getFonts();
     boolean filterFishyGlyphs();
+    FontSet callGetFontSet(ResourceLocation resourceLocation);
 }

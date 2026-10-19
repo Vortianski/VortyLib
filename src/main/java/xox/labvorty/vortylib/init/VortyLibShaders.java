@@ -5,6 +5,7 @@ import com.mojang.blaze3d.shaders.Uniform;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.EventPriority;
@@ -35,6 +36,8 @@ public class VortyLibShaders {
     public static CompatibleShaderInstance ENTITY_PARALLAX;
     public static CompatibleShaderInstance ENTITY_COLORED_GLINT;
     public static CompatibleShaderInstance ENTITY_SPIRAL;
+
+    public static CompatibleShaderInstance POST_ZONE_TEST;
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void register(RegisterShadersEvent event) {
@@ -212,7 +215,16 @@ public class VortyLibShaders {
                 if (screenSize != null && window != null) {
                     screenSize.set((float)window.getWidth(), (float)window.getHeight());
                 }
+
+                ENTITY_SPIRAL.apply();
             });
+
+            POST_ZONE_TEST = new CompatibleShaderInstance(
+                    event.getResourceProvider(),
+                    ResourceLocation.fromNamespaceAndPath("vortylib", "zone_test"),
+                    DefaultVertexFormat.POSITION
+            );
+            event.registerShader(POST_ZONE_TEST, ShaderInstance::apply);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

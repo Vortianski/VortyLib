@@ -1,7 +1,5 @@
 package xox.labvorty.vortylib.data.commands;
 
-import java.util.Locale;
-
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -17,6 +15,8 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import xox.labvorty.vortylib.VortyLib;
+
+import java.util.Locale;
 
 @EventBusSubscriber(modid = VortyLib.MODID)
 public class DimensionTeleportCommand {

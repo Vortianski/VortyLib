@@ -6,11 +6,14 @@ import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import xox.labvorty.vortylib.VortyLib;
 import xox.labvorty.vortylib.configs.ClientConfig;
 import xox.labvorty.vortylib.data.config.ConfigHolder;
 import xox.labvorty.vortylib.data.config.ModEntry;
 import xox.labvorty.vortylib.data.config.ModRegistry;
 import xox.labvorty.vortylib.data.config.SocialType;
+import xox.labvorty.vortylib.data.network.FloatingTextPacket;
 import xox.labvorty.vortylib.gui.theme.PanoramaTheme;
 import xox.labvorty.vortylib.gui.theme.ThemeSpriteSet;
 import xox.labvorty.vortylib.gui.theme.UiTheme;
@@ -18,7 +21,7 @@ import xox.labvorty.vortylib.gui.theme.UiTheme;
 @EventBusSubscriber
 public class VortyLibInitialization {
     @SubscribeEvent
-    public static void onCommon(FMLClientSetupEvent event) {
+    public static void onClient(FMLClientSetupEvent event) {
         event.enqueueWork(() -> {
             UiTheme.setCurrent(ClientConfig.UI_THEME.get());
 
@@ -87,6 +90,17 @@ public class VortyLibInitialization {
                             .addSocial(SocialType.discord("https://discord.gg/ZesGqhGnAN"))
                             .addSocial(SocialType.kofi("https://ko-fi.com/vortianski"))
                             .build()
+            );
+        });
+    }
+
+    @SubscribeEvent
+    public static void onCommon(FMLCommonSetupEvent event) {
+        event.enqueueWork(() -> {
+            VortyLib.addNetworkMessage(
+                    FloatingTextPacket.TYPE,
+                    FloatingTextPacket.CODEC,
+                    FloatingTextPacket::handle
             );
         });
     }

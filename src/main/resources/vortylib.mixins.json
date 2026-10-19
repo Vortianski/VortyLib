@@ -16,7 +16,10 @@
     "client.GuiGraphicsMixin",
     "client.GameRendererMixin",
     "client.PostChainMixin",
-    "client.PlayerRendererMixin"
+    "client.PlayerRendererMixin",
+    "client.StringRenderOutputMixin",
+    "client.StyleMixin",
+    "client.StyleSerializerMixin"
   ],
   "plugin": "xox.labvorty.vortylib.mixin.compat.VortyLibMixinPlugin",
   "injectors": {
