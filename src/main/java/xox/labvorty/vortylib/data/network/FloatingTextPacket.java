@@ -32,7 +32,12 @@ public record FloatingTextPacket(
         float riseSpeed,
         boolean seeThrough,
         boolean fullBright,
-        int wrapWidth
+        int wrapWidth,
+        boolean dropShadow,
+        boolean followPosition,
+        boolean followXRotation,
+        boolean followYRotation,
+        float typewriterSpeed
 ) implements CustomPacketPayload {
     private static final Logger LOGGER = LogUtils.getLogger();
 
@@ -56,6 +61,11 @@ public record FloatingTextPacket(
                 buf.writeBoolean(packet.seeThrough);
                 buf.writeBoolean(packet.fullBright);
                 buf.writeVarInt(packet.wrapWidth);
+                buf.writeBoolean(packet.dropShadow);
+                buf.writeBoolean(packet.followPosition);
+                buf.writeBoolean(packet.followXRotation);
+                buf.writeBoolean(packet.followYRotation);
+                buf.writeFloat(packet.typewriterSpeed);
             },
             (buf) -> {
                 Component text = ComponentSerialization.STREAM_CODEC.decode(buf);
@@ -71,10 +81,16 @@ public record FloatingTextPacket(
                 boolean seeThrough = buf.readBoolean();
                 boolean fullBright = buf.readBoolean();
                 int wrapWidth = Mth.clamp(buf.readVarInt(), 20, 400);
+                boolean dropShadow = buf.readBoolean();
+                boolean followPosition = buf.readBoolean();
+                boolean followXRotation = buf.readBoolean();
+                boolean followYRotation = buf.readBoolean();
+                float typewriterSpeed = Mth.clamp(buf.readFloat(), 0.0f, 1000.0f);
 
                 return new FloatingTextPacket(
                         text, position, followEntityId, rotations, scale, lifetime,
-                        fadeIn, fadeOut, popIn, riseSpeed, seeThrough, fullBright, wrapWidth
+                        fadeIn, fadeOut, popIn, riseSpeed, seeThrough, fullBright, wrapWidth, dropShadow,
+                        followPosition, followXRotation, followYRotation, typewriterSpeed
                 );
             }
     );
@@ -121,6 +137,11 @@ public record FloatingTextPacket(
         private boolean seeThrough = false;
         private boolean fullBright = true;
         private int wrapWidth = 160;
+        private boolean dropShadow = false;
+        private boolean followPosition = true;
+        private boolean followXRotation = false;
+        private boolean followYRotation = false;
+        private float typewriterSpeed = 0.0f;
 
         private Builder(Component text, Vec3 position) {
             this.text = text;
@@ -130,6 +151,21 @@ public record FloatingTextPacket(
         public Builder follow(Entity entity, Vec3 offset) {
             this.followEntityId = entity.getId();
             this.position = offset;
+            return this;
+        }
+
+        public Builder followPosition(boolean followPosition) {
+            this.followPosition = followPosition;
+            return this;
+        }
+
+        public Builder followXRotation(boolean followXRotation) {
+            this.followXRotation = followXRotation;
+            return this;
+        }
+
+        public Builder followYRotation(boolean followYRotation) {
+            this.followYRotation = followYRotation;
             return this;
         }
 
@@ -179,10 +215,21 @@ public record FloatingTextPacket(
             return this;
         }
 
+        public Builder dropShadow(boolean dropShadow) {
+            this.dropShadow = dropShadow;
+            return this;
+        }
+
+        public Builder typewriter(float charactersPerTick) {
+            this.typewriterSpeed = charactersPerTick;
+            return this;
+        }
+
         public FloatingTextPacket build() {
             return new FloatingTextPacket(
                     text, position, followEntityId, new Vector3f(rotations), scale,
-                    lifetime, fadeIn, fadeOut, popIn, riseSpeed, seeThrough, fullBright, wrapWidth
+                    lifetime, fadeIn, fadeOut, popIn, riseSpeed, seeThrough, fullBright, wrapWidth, dropShadow,
+                    followPosition, followXRotation, followYRotation, typewriterSpeed
             );
         }
     }

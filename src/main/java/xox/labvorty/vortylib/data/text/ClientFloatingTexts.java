@@ -2,7 +2,6 @@ package xox.labvorty.vortylib.data.text;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.logging.LogUtils;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -24,7 +23,6 @@ import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
-import org.joml.Vector4f;
 import xox.labvorty.vortylib.data.network.FloatingTextPacket;
 
 import java.util.ArrayList;
@@ -48,15 +46,45 @@ public final class ClientFloatingTexts {
         }
 
         int[] widths = new int[lines.size()];
+        int[] counts = new int[lines.size()];
         for (int i = 0; i < widths.length; i++) {
             widths[i] = font.width(lines.get(i));
+            counts[i] = countChars(lines.get(i));
         }
 
         if (ACTIVE.size() >= MAX_ACTIVE) {
             ACTIVE.remove(0);
         }
 
-        ACTIVE.add(new Active(packet, lines, widths));
+        Active active = new Active(packet, lines, widths, counts);
+        active.track(1.0f);
+        ACTIVE.add(active);
+    }
+
+    public static void remove(FloatingTextPacket packet) {
+        ACTIVE.removeIf(active -> active.packet == packet);
+    }
+
+    private static int countChars(FormattedCharSequence sequence) {
+        int[] count = {0};
+        sequence.accept((index, style, codePoint) -> {
+            count[0]++;
+            return true;
+        });
+        return count[0];
+    }
+
+    private static FormattedCharSequence truncate(FormattedCharSequence sequence, int limit) {
+        return sink -> {
+            int[] count = {0};
+            return sequence.accept((index, style, codePoint) -> {
+                if (count[0] >= limit) {
+                    return false;
+                }
+                count[0]++;
+                return sink.accept(index, style, codePoint);
+            });
+        };
     }
 
     @SubscribeEvent
@@ -90,7 +118,7 @@ public final class ClientFloatingTexts {
 
     @SubscribeEvent
     public static void onRenderLevel(RenderLevelStageEvent event) {
-        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS || ACTIVE.isEmpty()) {
+        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_LEVEL || ACTIVE.isEmpty()) {
             return;
         }
 
@@ -140,7 +168,9 @@ public final class ClientFloatingTexts {
             boolean applyView
     ) {
         FloatingTextPacket packet = active.packet;
-        Vec3 base = active.basePosition(partialTick);
+        active.track(partialTick);
+        Quaternionf delta = active.followDelta();
+        Vec3 base = active.basePosition(delta);
         if (base == null) {
             skip(active, "base position is null");
             return;
@@ -189,10 +219,12 @@ public final class ClientFloatingTexts {
         }
 
         Vector3f angles = packet.rotations();
-        Quaternionf rotation = new Quaternionf().rotationYXZ(
-                angles.y * Mth.DEG_TO_RAD,
-                angles.x * Mth.DEG_TO_RAD,
-                angles.z * Mth.DEG_TO_RAD
+        Quaternionf rotation = new Quaternionf(delta).mul(
+                new Quaternionf().rotationYXZ(
+                        angles.y * Mth.DEG_TO_RAD,
+                        angles.x * Mth.DEG_TO_RAD,
+                        angles.z * Mth.DEG_TO_RAD
+                )
         );
 
         Vector3f frontNormal = rotation.transform(new Vector3f(0.0f, 0.0f, -1.0f));
@@ -214,25 +246,41 @@ public final class ClientFloatingTexts {
             active.drawn = true;
         }
 
+        boolean typewriter = packet.typewriterSpeed() > 0.0f;
+        int revealed = typewriter ? (int) (progress * packet.typewriterSpeed()) : Integer.MAX_VALUE;
+
         poseStack.pushPose();
         if (applyView) {
             poseStack.mulPose(view);
         }
         poseStack.translate(dx, dy, dz);
         poseStack.mulPose(rotation);
-        poseStack.scale(-scale, -scale, scale);
+        poseStack.scale(-scale, -scale, -scale);
 
         Matrix4f matrix = poseStack.last().pose();
         int lineHeight = font.lineHeight;
         float startY = -(active.lines.size() * lineHeight) / 2.0f;
 
         for (int i = 0; i < active.lines.size(); i++) {
+            FormattedCharSequence line = active.lines.get(i);
+
+            if (typewriter) {
+                if (revealed <= 0) {
+                    break;
+                }
+                int visible = Math.min(revealed, active.counts[i]);
+                revealed -= visible;
+                if (visible < active.counts[i]) {
+                    line = truncate(line, visible);
+                }
+            }
+
             font.drawInBatch(
-                    active.lines.get(i),
+                    line,
                     -active.widths[i] / 2.0f,
                     startY + i * lineHeight,
                     color,
-                    false,
+                    packet.dropShadow(),
                     matrix,
                     buffers,
                     mode,
@@ -248,33 +296,93 @@ public final class ClientFloatingTexts {
         final FloatingTextPacket packet;
         final List<FormattedCharSequence> lines;
         final int[] widths;
+        final int[] counts;
         int age;
-        Vec3 lastBase;
+        boolean captured;
+        Vec3 spawnPivot = Vec3.ZERO;
+        float spawnYaw;
+        float spawnPitch;
+        float eyeHeight;
+        Vec3 pivot = Vec3.ZERO;
+        float yaw;
+        float pitch;
         boolean stageSeen;
         boolean drawn;
         String lastSkip;
         int lastLoggedAge = -1;
 
-        Active(FloatingTextPacket packet, List<FormattedCharSequence> lines, int[] widths) {
+        Active(FloatingTextPacket packet, List<FormattedCharSequence> lines, int[] widths, int[] counts) {
             this.packet = packet;
             this.lines = lines;
             this.widths = widths;
+            this.counts = counts;
         }
 
-        Vec3 basePosition(float partialTick) {
+        void track(float partialTick) {
+            if (packet.followEntityId() < 0) {
+                return;
+            }
+
+            ClientLevel level = Minecraft.getInstance().level;
+            if (level == null) {
+                return;
+            }
+
+            Entity entity = level.getEntity(packet.followEntityId());
+            if (entity == null) {
+                return;
+            }
+
+            if (!captured) {
+                spawnPivot = entity.position();
+                spawnYaw = 0.0f;
+                spawnPitch = 0.0f;
+                eyeHeight = entity.getEyeHeight();
+                captured = true;
+            }
+
+            pivot = packet.followPosition() ? entity.getPosition(partialTick) : spawnPivot;
+            yaw = packet.followXRotation() ? entity.getViewYRot(partialTick) : spawnYaw;
+            pitch = packet.followYRotation() ? entity.getViewXRot(partialTick) : spawnPitch;
+        }
+
+        Quaternionf followDelta() {
+            if (!captured) {
+                return new Quaternionf();
+            }
+
+            Quaternionf current = new Quaternionf().rotationYXZ(
+                    -yaw * Mth.DEG_TO_RAD,
+                    pitch * Mth.DEG_TO_RAD,
+                    0.0f
+            );
+            Quaternionf origin = new Quaternionf().rotationYXZ(
+                    -spawnYaw * Mth.DEG_TO_RAD,
+                    spawnPitch * Mth.DEG_TO_RAD,
+                    0.0f
+            ).invert();
+
+            return current.mul(origin);
+        }
+
+        Vec3 basePosition(Quaternionf delta) {
             if (packet.followEntityId() < 0) {
                 return packet.position();
             }
 
-            ClientLevel level = Minecraft.getInstance().level;
-            if (level != null) {
-                Entity entity = level.getEntity(packet.followEntityId());
-                if (entity != null) {
-                    lastBase = entity.getPosition(partialTick).add(packet.position());
-                }
+            if (!captured) {
+                return null;
             }
 
-            return lastBase;
+            Vec3 offset = packet.position();
+            Vector3f relative = new Vector3f(
+                    (float) offset.x,
+                    (float) (offset.y - eyeHeight),
+                    (float) offset.z
+            );
+            delta.transform(relative);
+
+            return pivot.add(relative.x, relative.y + eyeHeight, relative.z);
         }
     }
 }
