@@ -32,10 +32,14 @@ public class StyleMixin implements StyleEffects {
     @Shadow @Final private ResourceLocation font;
 
     @Unique
-    private List<TextEffect> vortylib$effects = List.of();
+    private List<TextEffect> vortylib$effects;
 
     @Override
     public List<TextEffect> vortylib$getEffects() {
+        if (vortylib$effects == null) {
+            vortylib$effects = List.of();
+        }
+
         return vortylib$effects;
     }
 
@@ -49,6 +53,7 @@ public class StyleMixin implements StyleEffects {
             }
             return;
         }
+
         vortylib$effects = effects.isEmpty() ? List.of() : List.copyOf(effects);
     }
 
@@ -71,8 +76,8 @@ public class StyleMixin implements StyleEffects {
     )
     private Style vortylib$keepEffects(Style original) {
         Style self = (Style) (Object) this;
-        if (original == self || original == Style.EMPTY || vortylib$effects.isEmpty()) return original;
-        ((StyleEffects) (Object) original).vortylib$setEffects(vortylib$effects);
+        if (original == self || original == Style.EMPTY || vortylib$getEffects().isEmpty()) return original;
+        ((StyleEffects) (Object) original).vortylib$setEffects(vortylib$getEffects());
         return original;
     }
 
@@ -80,7 +85,7 @@ public class StyleMixin implements StyleEffects {
     private Style vortylib$mergeEffects(Style original, Style that) {
         Style self = (Style) (Object) this;
         if (original == self || original == that || original == Style.EMPTY) return original;
-        List<TextEffect> merged = TextEffects.merge(StyleEffects.get(that), vortylib$effects);
+        List<TextEffect> merged = TextEffects.merge(StyleEffects.get(that), vortylib$getEffects());
         if (!merged.isEmpty()) {
             ((StyleEffects) (Object) original).vortylib$setEffects(merged);
         }
@@ -89,11 +94,11 @@ public class StyleMixin implements StyleEffects {
 
     @ModifyReturnValue(method = "equals", at = @At("RETURN"))
     private boolean vortylib$equals(boolean original, Object other) {
-        return original && (!(other instanceof StyleEffects o) || vortylib$effects.equals(o.vortylib$getEffects()));
+        return original && (!(other instanceof StyleEffects o) || vortylib$getEffects().equals(o.vortylib$getEffects()));
     }
 
     @ModifyReturnValue(method = "hashCode", at = @At("RETURN"))
     private int vortylib$hashCode(int original) {
-        return vortylib$effects.isEmpty() ? original : 31 * original + vortylib$effects.hashCode();
+        return vortylib$getEffects().isEmpty() ? original : 31 * original + vortylib$getEffects().hashCode();
     }
 }

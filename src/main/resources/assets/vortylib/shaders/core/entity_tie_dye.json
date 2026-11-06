@@ -1,0 +1,30 @@
+{
+  "vertex": "vortylib:entity_tie_dye",
+  "fragment": "vortylib:entity_tie_dye",
+  "samplers": [
+    { "name": "Sampler0" },
+    { "name": "Sampler1" },
+    { "name": "Sampler2" }
+  ],
+  "uniforms": [
+    { "name": "ModelViewMat", "type": "matrix4x4", "count": 16, "values": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ] },
+    { "name": "ProjMat", "type": "matrix4x4", "count": 16, "values": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ] },
+    { "name": "ColorModulator", "type": "float", "count": 4, "values": [ 1.0, 1.0, 1.0, 1.0 ] },
+    { "name": "Light0_Direction", "type": "float", "count": 3, "values": [0.0, 0.0, 0.0] },
+    { "name": "Light1_Direction", "type": "float", "count": 3, "values": [0.0, 0.0, 0.0] },
+    { "name": "FogStart", "type": "float", "count": 1, "values": [ 0.0 ] },
+    { "name": "FogEnd", "type": "float", "count": 1, "values": [ 1.0 ] },
+    { "name": "FogColor", "type": "float", "count": 4, "values": [ 0.0, 0.0, 0.0, 0.0 ] },
+    { "name": "FogShape", "type": "int", "count": 1, "values": [ 0 ] },
+    { "name": "GameTime", "type": "float", "count": 1, "values": [ 0.0 ] },
+    { "name": "PaletteSize", "type": "int", "count": 1, "values": [ 7 ] },
+    { "name": "PaletteColor0", "type": "float", "count": 3, "values": [ 0.92, 0.18, 0.55 ] },
+    { "name": "PaletteColor1", "type": "float", "count": 3, "values": [ 1.00, 0.52, 0.10 ] },
+    { "name": "PaletteColor2", "type": "float", "count": 3, "values": [ 1.00, 0.88, 0.20 ] },
+    { "name": "PaletteColor3", "type": "float", "count": 3, "values": [ 0.20, 0.78, 0.38 ] },
+    { "name": "PaletteColor4", "type": "float", "count": 3, "values": [ 0.15, 0.42, 0.95 ] },
+    { "name": "PaletteColor5", "type": "float", "count": 3, "values": [ 0.55, 0.25, 0.85 ] },
+    { "name": "PaletteColor6", "type": "float", "count": 3, "values": [ 1.0, 1.0, 1.0 ] },
+    { "name": "PaletteColor7", "type": "float", "count": 3, "values": [ 1.0, 1.0, 1.0 ] }
+  ]
+}

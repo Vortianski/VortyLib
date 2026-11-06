@@ -3,6 +3,7 @@ package xox.labvorty.vortylib.data.creative_tab;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import xox.labvorty.vortylib.compat.emi.EmiHelper;
 import xox.labvorty.vortylib.init.VortyLibDataComponents;
 
 import java.util.*;
@@ -101,6 +102,7 @@ public class ExpandableCreativeTab extends CreativeModeTab {
                             id
                     ))
                     .toList();
+            EmiHelper.items.addAll(items);
 
             groups.put(id, new ExpandableGroup(taggedIcon, taggedItems));
             entries.add(new TabEntry.Group(id));
