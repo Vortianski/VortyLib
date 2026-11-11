@@ -56,6 +56,7 @@ public class VortyLibRenderTypes extends RenderStateShard {
     private static final Function<ResourceLocation, RenderType> ENTITY_NEBULA = Util.memoize(VortyLibRenderTypes::createEntityNebula);
     private static final Function<ResourceLocation, RenderType> ENTITY_TRANSLUCENT_EMISSIVE_CULL = Util.memoize(VortyLibRenderTypes::createEntityTranslucentEmissiveCull);
     private static final Function<ResourceLocation, RenderType> ENTITY_CHROMATIC_ABERRATION = Util.memoize(VortyLibRenderTypes::createEntityChromaticAberration);
+    private static final Function<TieDyeRenderOptions, RenderType> ENTITY_TIE_DYE = Util.memoize(VortyLibRenderTypes::createEntityTieDye);
     private static final Function<ParallaxRenderOptions, RenderType> ENTITY_PARALLAX = Util.memoize(VortyLibRenderTypes::createEntityParallax);
     private static final Map<Vector3f, RenderType> ENTITY_COLORED_GLINT = new HashMap<>();
     private static final Function<ResourceLocation, RenderType> ENTITY_SPIRAL = Util.memoize(VortyLibRenderTypes::createEntitySpiral);
@@ -442,6 +443,70 @@ public class VortyLibRenderTypes extends RenderStateShard {
         );
     }
 
+    private static RenderType createEntityTieDye(TieDyeRenderOptions renderOptions) {
+        RenderType.CompositeState compositeState = RenderType.CompositeState.builder()
+                .setShaderState(new RenderStateShard.ShaderStateShard(() -> {
+                    CompatibleShaderInstance compatibleShaderInstance = VortyLibShaders.ENTITY_TIE_DYE;
+
+                    Uniform size = compatibleShaderInstance.getUniform("PaletteSize");
+                    if (size != null) {
+                        size.set(renderOptions.size);
+                    }
+                    Uniform colorOne = compatibleShaderInstance.getUniform("PaletteColor0");
+                    if (colorOne != null) {
+                        colorOne.set(renderOptions.colorOne.x, renderOptions.colorOne.y, renderOptions.colorOne.z);
+                    }
+                    Uniform colorTwo = compatibleShaderInstance.getUniform("PaletteColor1");
+                    if (colorTwo != null) {
+                        colorTwo.set(renderOptions.colorTwo.x, renderOptions.colorTwo.y, renderOptions.colorTwo.z);
+                    }
+                    Uniform colorThree = compatibleShaderInstance.getUniform("PaletteColor2");
+                    if (colorThree != null) {
+                        colorThree.set(renderOptions.colorThree.x, renderOptions.colorThree.y, renderOptions.colorThree.z);
+                    }
+                    Uniform colorFour = compatibleShaderInstance.getUniform("PaletteColor3");
+                    if (colorFour != null) {
+                        colorFour.set(renderOptions.colorFour.x, renderOptions.colorFour.y, renderOptions.colorFour.z);
+                    }
+                    Uniform colorFive = compatibleShaderInstance.getUniform("PaletteColor4");
+                    if (colorFive != null) {
+                        colorFive.set(renderOptions.colorFive.x, renderOptions.colorFive.y, renderOptions.colorFive.z);
+                    }
+                    Uniform colorSix = compatibleShaderInstance.getUniform("PaletteColor5");
+                    if (colorSix != null) {
+                        colorSix.set(renderOptions.colorSix.x, renderOptions.colorSix.y, renderOptions.colorSix.z);
+                    }
+                    Uniform colorSeven = compatibleShaderInstance.getUniform("PaletteColor6");
+                    if (colorSeven != null) {
+                        colorSeven.set(renderOptions.colorSeven.x, renderOptions.colorSeven.y, renderOptions.colorSeven.z);
+                    }
+                    Uniform colorEight = compatibleShaderInstance.getUniform("PaletteColor7");
+                    if (colorEight != null) {
+                        colorEight.set(renderOptions.colorEight.x, renderOptions.colorEight.y, renderOptions.colorEight.z);
+                    }
+
+                    compatibleShaderInstance.apply();
+
+                    return compatibleShaderInstance;
+                }))
+                .setTextureState(new RenderStateShard.TextureStateShard(renderOptions.resourceLocation, false, false))
+                .setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
+                .setCullState(RenderStateShard.NO_CULL)
+                .setLightmapState(RenderStateShard.LIGHTMAP)
+                .setOverlayState(RenderStateShard.OVERLAY)
+                .createCompositeState(true);
+
+        return RenderType.create(
+                "entity_tie_dye",
+                DefaultVertexFormat.NEW_ENTITY,
+                VertexFormat.Mode.QUADS,
+                1536,
+                true,
+                true,
+                compositeState
+        );
+    }
+
     public static RenderType getTextNoCull(ResourceLocation resourceLocation) {
         return TEXT_NO_CULL.apply(resourceLocation);
     }
@@ -540,6 +605,10 @@ public class VortyLibRenderTypes extends RenderStateShard {
         return ENTITY_SPIRAL.apply(resourceLocation);
     }
 
+    public static RenderType getEntityTieDye(ResourceLocation resourceLocation, int size, Vector3f colorOne, Vector3f colorTwo, Vector3f colorThree, Vector3f colorFour, Vector3f colorFive, Vector3f colorSix, Vector3f colorSeven, Vector3f colorEight) {
+        return ENTITY_TIE_DYE.apply(new TieDyeRenderOptions(resourceLocation, size, colorOne, colorTwo, colorThree, colorFour, colorFive, colorSix, colorSeven, colorEight));
+    }
+
     private static class CustomizableTextureState extends TextureStateShard {
         private final BooleanSupplier blurSupplier;
         private final BooleanSupplier mipmapSupplier;
@@ -573,4 +642,5 @@ public class VortyLibRenderTypes extends RenderStateShard {
             this(resourceLocation, maskLocation, speed, rotation, rotationSpeed, scale, new Vector4f(1, 1, 1, 1));
         }
     }
+    private record TieDyeRenderOptions(ResourceLocation resourceLocation, int size, Vector3f colorOne, Vector3f colorTwo, Vector3f colorThree, Vector3f colorFour, Vector3f colorFive, Vector3f colorSix, Vector3f colorSeven, Vector3f colorEight) {}
 }

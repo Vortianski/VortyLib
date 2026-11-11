@@ -31,6 +31,7 @@ public class VortyLibShaders {
     public static CompatibleShaderInstance ENTITY_PARALLAX;
     public static CompatibleShaderInstance ENTITY_COLORED_GLINT;
     public static CompatibleShaderInstance ENTITY_SPIRAL;
+    public static CompatibleShaderInstance ENTITY_TIE_DYE;
 
     @SubscribeEvent
     public static void register(RegisterShadersEvent event) {
@@ -208,6 +209,21 @@ public class VortyLibShaders {
                 if (screenSize != null && window != null) {
                     screenSize.set((float)window.getWidth(), (float)window.getHeight());
                 }
+            });
+
+            ENTITY_TIE_DYE = new CompatibleShaderInstance(
+                    event.getResourceProvider(),
+                    ResourceLocation.fromNamespaceAndPath("vortylib", "entity_tie_dye"),
+                    DefaultVertexFormat.NEW_ENTITY
+            );
+            event.registerShader(ENTITY_TIE_DYE, shaderInstance -> {
+                Uniform time = shaderInstance.getUniform("GameTime");
+
+                if (time != null) {
+                    time.set((float)renderTime + renderFrame);
+                }
+
+                ENTITY_TIE_DYE.apply();
             });
         } catch (IOException e) {
             throw new RuntimeException(e);
